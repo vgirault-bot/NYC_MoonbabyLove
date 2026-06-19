@@ -710,13 +710,21 @@ function drawDay(di){
     mk.mk.addTo(map);
   });
   dayPolylines(di).forEach(seg=>{ const pl=L.polyline(seg.coords,{color:days[di].color,weight:seg.dash?2.5:4,opacity:seg.dash?.6:.9,dashArray:seg.dash?"4,8":null}).addTo(map); curLines.push(pl); });
-  fitDay(di);
   activeDay=di;
+  fitDaySoon(di);
 }
 function layersClear(){ curLines.forEach(l=>map.removeLayer(l)); curLines=[]; allMarkers.forEach(o=>{ if(map.hasLayer(o.mk)) map.removeLayer(o.mk); }); if(heartLayer){ map.removeLayer(heartLayer); heartLayer=null; } }
 let activeDay=0;
 function showDay(di){ drawDay(di); }
-function fitDay(di){ const pts=activeSeq(di).map(ref=>stopOf(di,ref).ll); const all=pts.length?pts:state[di].order.map(ref=>stopOf(di,ref).ll); if(all.length) map.fitBounds(L.latLngBounds(all).pad(0.18)); }
+function boundsOfDay(di){ const pts=activeSeq(di).map(ref=>stopOf(di,ref).ll); const all=pts.length?pts:state[di].order.map(ref=>stopOf(di,ref).ll); return all.length?L.latLngBounds(all):null; }
+function fitDay(di){
+  const b=boundsOfDay(di); if(!b) return;
+  // s'assurer que le conteneur a sa taille finale avant de cadrer (responsive, carte masqu\u00e9e/r\u00e9affich\u00e9e)
+  map.invalidateSize(false);
+  map.fitBounds(b.pad(0.12),{maxZoom:15,animate:false});
+}
+// fit diff\u00e9r\u00e9 : laisse le layout se stabiliser (affichage carte mobile, rotation, etc.)
+function fitDaySoon(di){ requestAnimationFrame(()=>{ map.invalidateSize(false); requestAnimationFrame(()=>fitDay(di)); }); }
 
 // coeur "Big Apple" centr\u00e9 sur Manhattan, pour l'accueil
 let heartLayer=null;
@@ -738,11 +746,13 @@ function drawHeart(){
   L.polygon(pts,{color:"#ff5d8f",weight:10,opacity:.18,fill:true,fillColor:"#ff5d8f",fillOpacity:.10}).addTo(heartLayer);
   L.polygon(pts,{color:"#ff5d8f",weight:3,opacity:.95,fill:false}).addTo(heartLayer);
   heartLayer.addTo(map);
-  map.fitBounds(L.latLngBounds(pts).pad(0.25));
+  map.invalidateSize(false);
+  map.fitBounds(L.latLngBounds(pts).pad(0.18),{maxZoom:13,animate:false});
 }
 
 // tabs
-function showView(v){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v));
+let curView="accueil";
+function showView(v){ curView=v; document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v));
   ["accueil","itineraire","resa","guide"].forEach(x=>document.getElementById("view-"+x).style.display=(x===v)?"block":"none");
   if(v==="accueil"){ openDay=null; hideGpsBanner(); document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); setTimeout(()=>{ map.invalidateSize(); drawHeart(); },60); }
   if(v==="resa"){ renderResa(); }
@@ -753,7 +763,7 @@ var _mbg=document.getElementById("modalBg"); if(_mbg) _mbg.onclick=function(e){ 
 
 // map buttons
 document.getElementById("btnDayView").onclick=()=>fitDay(activeDay);
-document.getElementById("fabMap").onclick=()=>{ document.body.classList.toggle("showmap"); setTimeout(()=>map.invalidateSize(),60); };
+document.getElementById("fabMap").onclick=()=>{ const on=document.body.classList.toggle("showmap"); if(on){ setTimeout(()=>{ map.invalidateSize(false); if(openDay!=null) fitDay(openDay); else drawHeart(); },80); } };
 document.getElementById("tileSel").onchange=e=>setTiles(e.target.value);
 
 // geoloc
@@ -811,12 +821,16 @@ function load(){ try{ const m=location.hash.match(/s=([^&]+)/); if(!m) return; c
 }catch(e){} }
 
 // init
+// re-cadrage au redimensionnement / rotation
+let _rsz=null;
+window.addEventListener("resize",()=>{ clearTimeout(_rsz); _rsz=setTimeout(()=>{ map.invalidateSize(false); if(openDay!=null) fitDay(openDay); else if(curView==="accueil") drawHeart(); },200); });
+
 load();
 renderDays();
 openDay=null;
 document.querySelectorAll(".day").forEach(x=>x.classList.remove("open"));
 showView("accueil");
-setTimeout(()=>drawHeart(),120);
+setTimeout(()=>{ map.invalidateSize(false); drawHeart(); },160);
 </script>
 </body>
 </html>
