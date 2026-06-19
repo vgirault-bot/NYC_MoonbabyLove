@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>NYC 24-28 juin 2026, itinéraire</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -34,8 +34,18 @@
   .leaflet-popup-content h3{margin:0 0 5px;font-size:14px}
   .leaflet-popup-content .meta{color:#666;font-size:11px;margin:0 0 6px}
   .leaflet-popup-content a{display:inline-block;margin-top:6px;font-size:12px;color:#2f6fed;text-decoration:none}
+  .marker-pin{position:relative;width:30px;height:30px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.55)}
+  .pin-em{font-size:15px;line-height:1}
+  .pin-num{position:absolute;top:-6px;right:-6px;background:#0f1115;color:#fff;border:1px solid #fff;border-radius:50%;min-width:15px;height:15px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 2px}
   .marker-num{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;border:2px solid #fff;border-radius:50%;width:24px;height:24px;box-shadow:0 1px 4px rgba(0,0,0,.5)}
   .marker-bonus{border-style:dashed}
+  .legend2{margin-top:14px;font-size:11.5px;color:var(--muted);line-height:1.5}
+  .lg-title{color:var(--ink);font-weight:600;font-size:11.5px;margin:12px 0 6px}
+  .lg-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
+  .lg-grid div,.lg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .lg-line{display:inline-block;width:22px;height:0;flex:0 0 auto}
+  .lg-line.solid{border-top:4px solid #9aa3b2}
+  .lg-line.dashed{border-top:2.5px dashed #9aa3b2}
   .note{background:#1e2230;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:14px}
 
   .resa{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
@@ -59,10 +69,30 @@
   #pane-guide b{color:var(--ink)}
   body.guide #pane-itineraire{display:none}
   body.guide #pane-guide{display:block}
-  @media(max-width:760px){
-    #app{flex-direction:column}
-    #sidebar{width:100%;min-width:0;height:auto;max-height:44%;border-right:0;border-bottom:1px solid var(--line)}
-    #map{height:56%}
+
+  #pane-accueil{display:none;font-size:13.5px;line-height:1.7;color:var(--ink)}
+  body.accueil #pane-itineraire{display:none}
+  body.accueil #pane-guide{display:none}
+  body.accueil #pane-accueil{display:block}
+  #pane-accueil .lead{font-size:15px;color:var(--ink);line-height:1.6;margin:0 0 16px;font-weight:500}
+  #pane-accueil p{color:var(--muted);margin:0 0 13px}
+  #pane-accueil .sig{color:#c8a24a;font-style:italic;margin-top:18px;font-size:13px}
+  #pane-accueil h2{font-size:13px;margin:18px 0 6px;color:var(--ink)}
+  #pane-accueil ul{color:var(--muted);padding-left:18px;margin:0 0 12px}
+  #pane-accueil li{margin-bottom:5px}
+  .geo-btn{position:absolute;z-index:1000;right:12px;bottom:24px;display:flex;flex-direction:column;gap:8px}
+  .geo-btn button{background:#171a21;color:#e8eaf0;border:1px solid #2f6fed;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+  .geo-btn button:active{background:#2f6fed}
+  .geo-btn button.off{border-color:#262b36;color:#9aa3b2}
+    @media(max-width:760px){
+    #app{flex-direction:column;height:100%;height:100dvh}
+    #sidebar{width:100%;min-width:0;height:auto;max-height:46%;border-right:0;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
+    #map{height:54%;min-height:300px}
+    .tab{padding:10px 14px;font-size:13.5px}
+    .stop{padding-top:9px;padding-bottom:9px}
+    .day-h{padding:13px 12px}
+    .geo-btn button{padding:12px 14px;font-size:14px}
+    .leaflet-popup-content{font-size:13.5px}
   }
 </style>
 </head>
@@ -71,11 +101,41 @@
   <div id="sidebar">
     <h1>New York, 24-28 juin 2026</h1>
     <p class="sub">Hôtel : 103 Waverly Place, Greenwich Village. Couchers ~20h30. Départ dim. 16h30 (heure NYC) à confirmer.</p>
-    <div class="tabs"><div class="tab active" data-pane="itineraire">Itinéraire</div><div class="tab" data-pane="guide">Guide</div></div>
+    <div class="tabs"><div class="tab active" data-pane="accueil">Accueil</div><div class="tab" data-pane="itineraire">Itinéraire</div><div class="tab" data-pane="guide">Guide</div></div>
+
+    <div id="pane-accueil">
+      <p class="lead">Quatre jours et demi à New York, à deux pas l'un de l'autre.</p>
+      <p>L'idée n'est pas de tout cocher, mais de traverser la ville ensemble : un coucher de soleil chaque soir tout en haut d'une tour, du jazz dans une cave du Village, un pont franchi à vélo au matin, une course dans Central Park quand la ville s'éveille.</p>
+      <p>On a fait le choix de ne pas tout remplir : une matinée reste libre pour courir, flâner, ne rien décider.  Les journées sont pensées par zones pour ne pas courir après le métro, et chaque jour garde des étapes « bonus » qu'on fait ou qu'on laisse, selon l'envie et la lumière. Rien n'est figé. On choisit au moment, la main dans la main.</p>
+      <h2>Le fil des jours</h2>
+      <ul>
+        <li><b>Mer 24</b> — Arrivée, le Village et l'Hudson, premier coucher au SUMMIT.</li>
+        <li><b>Jeu 25</b> — Musées, Times Square la nuit, Hamilton.</li>
+        <li><b>Ven 26</b> — Brooklyn à vélo, le jazz au Village Vanguard.</li>
+        <li><b>Sam 27</b> — Le sud de l'île, la Statue au loin, coucher à l'EDGE.</li>
+        <li><b>Dim 28</b> — Gospel à Harlem, soul food entre les locaux, puis l'avion.</li>
+      </ul>
+      <p class="sig">Bon voyage à vous deux.</p>
+    </div>
+
     <div id="pane-itineraire">
     <div class="modes"><span>🚶 à pied</span><span>🚲 vélo</span><span>🚇 métro</span><span>🚕 taxi</span><span>🏃 run</span></div>
     <div id="days"></div>
-    <div class="legend" id="legend"></div>
+    
+<div class="legend2">
+  <div class="lg-title">Icônes</div>
+  <div class="lg-grid" id="lgIcons"></div>
+  <div class="lg-title">Tracés</div>
+  <div class="lg-row"><span class="lg-line solid"></span> À pied / à vélo / en courant</div>
+  <div class="lg-row"><span class="lg-line dashed"></span> Métro ou taxi (indicatif)</div>
+  <div class="lg-title">Repères de durée</div>
+  <div class="lg-row">🏃 run Central Park : boucle 2,5 km (réservoir) à 10 km (grande boucle)</div>
+  <div class="lg-row">🚲 Brooklyn à vélo : ~6 km, 30-40 min de selle</div>
+  <div class="lg-row">🚶 journées à pied : 5 à 13 km selon le jour</div>
+  <div class="lg-title">Jours</div>
+  <div id="lgDays"></div>
+</div>
+
     
 <div class="resa">
   <h2>Réservations & arrivées conseillées</h2>
@@ -125,18 +185,34 @@
 
   </div>
   <div id="map"></div>
+  <div class="geo-btn"><button id="locBtn" class="off">📍 Ma position</button><button id="recenterBtn" style="display:none">🎯 Recentrer</button></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const MODE={walk:"🚶",bike:"🚲",subway:"🚇",taxi:"🚕",run:"🏃"};
-const days=[{"name": "Mer 24 — Village, Hudson & Whitney", "color": "#e6194B", "meta": "~5,5 km à pied", "stops": [{"n": "H", "name": "Hôtel — 103 Waverly Place", "ll": [40.73345, -73.99857], "m": "walk", "d": "Arrivée 16h. Greenwich Village."}, {"name": "Washington Square Park", "ll": [40.7308838, -73.997332], "m": "walk", "d": "Arche iconique, cœur du Village, ambiance NYU.", "q": "Washington Square Park New York"}, {"name": "Stonewall Inn", "ll": [40.7338326, -74.0021626], "m": "walk", "d": "Berceau des droits LGBTQ+, à 5 min de l'hôtel.", "q": "Stonewall Inn New York"}, {"name": "Whitney Museum", "ll": [40.7396251, -74.0088346], "m": "walk", "d": "Art américain (Hopper, Pollock). Bonus, ferme 18h.", "q": "Whitney Museum New York", "bonus": true}, {"name": "High Line (Gansevoort)", "ll": [40.7394043, -74.0080623], "m": "walk", "d": "Promenade aérienne, jardins.", "q": "High Line Gansevoort New York"}, {"name": "Chelsea Market", "ll": [40.7424511, -74.0060901], "m": "walk", "d": "Halle gourmande sous la High Line. Bonus.", "q": "Chelsea Market New York", "bonus": true}, {"name": "Little Island (Pier 55)", "ll": [40.7420024, -74.010299], "m": "walk", "d": "Parc flottant design sur l'Hudson.", "q": "Little Island Pier 55 New York"}, {"name": "Vessel & Hudson Yards", "ll": [40.7538, -74.0019], "m": "walk", "d": "Structure en nid d'abeille, plaza moderne. Bonus.", "q": "Vessel Hudson Yards New York", "bonus": true}, {"name": "Grand Central Terminal", "ll": [40.7527, -73.9772], "m": "subway", "d": "Hall majestueux, plafond étoilé. Bonus, sous SUMMIT.", "q": "Grand Central Terminal New York", "bonus": true}, {"name": "SUMMIT One Vanderbilt", "ll": [40.7527746, -73.9787253], "m": "walk", "d": "COUCHER. Sphères miroirs (Air), glass floor, vue face à l'Empire State. ~19h30. Réserver sunset.", "q": "SUMMIT One Vanderbilt"}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "dash": false}, {"coords": [[40.7308838, -73.997332], [40.7338326, -74.0021626]], "dash": false}, {"coords": [[40.7338326, -74.0021626], [40.7396251, -74.0088346]], "dash": false}, {"coords": [[40.7396251, -74.0088346], [40.7394043, -74.0080623]], "dash": false}, {"coords": [[40.7394043, -74.0080623], [40.7424511, -74.0060901]], "dash": false}, {"coords": [[40.7424511, -74.0060901], [40.7420024, -74.010299]], "dash": false}, {"coords": [[40.7420024, -74.010299], [40.7538, -74.0019]], "dash": false}, {"coords": [[40.7538, -74.0019], [40.7527, -73.9772]], "dash": true}, {"coords": [[40.7527, -73.9772], [40.7527746, -73.9787253]], "dash": false}]}, {"name": "Jeu 25 — MoMA, Guggenheim & Hamilton", "color": "#3cb44b", "meta": "~8 km + Harlem option", "stops": [{"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "subway", "d": "Départ Midtown, métro F/M."}, {"name": "MoMA", "ll": [40.7614327, -73.9776216], "m": "subway", "d": "Van Gogh, Monet, Picasso. Ouverture 10h30, ~2h30.", "q": "MoMA Museum of Modern Art New York"}, {"name": "Guggenheim", "ll": [40.7829796, -73.9589706], "m": "walk", "d": "Bonus. Spirale de F. L. Wright. Si fait, zappe Top of the Rock.", "q": "Guggenheim Museum New York", "bonus": true}, {"name": "Harlem — 125th St & Apollo", "ll": [40.8099, -73.9501], "m": "subway", "d": "Bonus. Cœur de Harlem : 125th St, Apollo Theater, ambiance. ~10 min en métro depuis le Guggenheim. Pas de gospel en semaine, mais l'atmosphère et l'architecture.", "q": "Apollo Theater 125th Street Harlem", "bonus": true}, {"name": "Déjeuner soul food (Sylvia's / Red Rooster)", "ll": [40.8086445, -73.944479], "m": "walk", "d": "Bonus. Table soul food historique de Harlem.", "q": "Sylvia's Restaurant Harlem", "bonus": true}, {"name": "St. Patrick's Cathedral", "ll": [40.7585, -73.9759], "m": "subway", "d": "Cathédrale néogothique, 5e Avenue. Bonus.", "q": "St Patrick's Cathedral New York", "bonus": true}, {"name": "Top of the Rock", "ll": [40.7593495, -73.9794087], "m": "walk", "d": "Observatoire Rockefeller en journée. Vue Central Park + Empire State.", "q": "Top of the Rock New York"}, {"name": "Radio City Music Hall", "ll": [40.7599, -73.9799], "m": "walk", "d": "Salle Art déco mythique. Bonus.", "q": "Radio City Music Hall New York", "bonus": true}, {"name": "Bryant Park & NY Public Library", "ll": [40.7536, -73.9832], "m": "walk", "d": "Parc élégant + bibliothèque aux lions. Bonus.", "q": "Bryant Park New York Public Library", "bonus": true}, {"name": "Times Square", "ll": [40.7579747, -73.9855426], "m": "walk", "d": "À voir de nuit avant le théâtre.", "q": "Times Square New York"}, {"name": "Richard Rodgers — Hamilton", "ll": [40.7590916, -73.9865404], "m": "walk", "d": "Hamilton, 19h. ~2h45.", "q": "Richard Rodgers Theatre New York"}, {"name": "Empire State Building (nuit)", "ll": [40.7484405, -73.9856644], "m": "walk", "d": "Après le spectacle, vue de nuit. Ouvert tard.", "q": "Empire State Building New York"}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "dash": true}, {"coords": [[40.7614327, -73.9776216], [40.7829796, -73.9589706]], "dash": false}, {"coords": [[40.7829796, -73.9589706], [40.8099, -73.9501]], "dash": true}, {"coords": [[40.8099, -73.9501], [40.8086445, -73.944479]], "dash": false}, {"coords": [[40.8086445, -73.944479], [40.7585, -73.9759]], "dash": true}, {"coords": [[40.7585, -73.9759], [40.7593495, -73.9794087]], "dash": false}, {"coords": [[40.7593495, -73.9794087], [40.7599, -73.9799]], "dash": false}, {"coords": [[40.7599, -73.9799], [40.7536, -73.9832]], "dash": false}, {"coords": [[40.7536, -73.9832], [40.7579747, -73.9855426]], "dash": false}, {"coords": [[40.7579747, -73.9855426], [40.7590916, -73.9865404]], "dash": false}, {"coords": [[40.7590916, -73.9865404], [40.7484405, -73.9856644]], "dash": false}]}, {"name": "Ven 26 — Brooklyn à vélo & jazz", "color": "#4363d8", "meta": "~7 km marche + 6 km vélo (+ run option)", "stops": [{"name": "Run Central Park (option, tôt)", "ll": [40.7857, -73.9627], "m": "run", "d": "Bonus. Run matinal tôt au réservoir avant Brooklyn, si l'envie. Taxi/métro aller-retour.", "q": "Central Park Reservoir running New York", "bonus": true}, {"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Citi Bike vers le pont."}, {"name": "Pont de Brooklyn", "ll": [40.7060855, -73.9968643], "m": "bike", "d": "Traversée à vélo, tours gothiques, skyline.", "q": "Brooklyn Bridge New York"}, {"name": "DUMBO", "ll": [40.7033164, -73.9881451], "m": "bike", "d": "Quartier pavé, vue Manhattan Bridge, Jane's Carousel.", "q": "DUMBO Brooklyn"}, {"name": "Brooklyn Bridge Park", "ll": [40.7022422, -73.9958601], "m": "walk", "d": "Parc waterfront, meilleure skyline de Manhattan.", "q": "Brooklyn Bridge Park New York"}, {"name": "Brooklyn Heights Promenade", "ll": [40.6964173, -73.9977463], "m": "walk", "d": "Esplanade suspendue, vue Lower Manhattan et Statue.", "q": "Brooklyn Heights Promenade"}, {"name": "Williamsburg (Bedford Ave)", "ll": [40.717, -73.9569], "m": "bike", "d": "Rue branchée, friperies, cafés, street art. Bonus.", "q": "Bedford Avenue Williamsburg Brooklyn", "bonus": true}, {"name": "Domino Park", "ll": [40.7148803, -73.967851], "m": "walk", "d": "Parc reconverti, vue Williamsburg Bridge.", "q": "Domino Park Williamsburg Brooklyn"}, {"name": "Village Vanguard", "ll": [40.7360334, -74.0016548], "m": "subway", "d": "Club de jazz légendaire, 20h. À 8 min de l'hôtel.", "q": "Village Vanguard New York"}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "dash": false}, {"coords": [[40.7060855, -73.9968643], [40.7033164, -73.9881451]], "dash": false}, {"coords": [[40.7033164, -73.9881451], [40.7022422, -73.9958601]], "dash": false}, {"coords": [[40.7022422, -73.9958601], [40.6964173, -73.9977463]], "dash": false}, {"coords": [[40.6964173, -73.9977463], [40.717, -73.9569]], "dash": false}, {"coords": [[40.717, -73.9569], [40.7148803, -73.967851]], "dash": false}, {"coords": [[40.7148803, -73.967851], [40.7360334, -74.0016548]], "dash": true}]}, {"name": "Sam 27 — Sud iconique & EDGE", "color": "#f58231", "meta": "~13 km à pied", "stops": [{"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "walk", "d": "Départ à pied vers le sud. Financial District calme le week-end."}, {"name": "Flatiron Building", "ll": [40.7410605, -73.9896986], "m": "walk", "d": "Immeuble triangulaire iconique, Madison Square Park.", "q": "Flatiron Building New York"}, {"name": "SoHo (Broadway)", "ll": [40.7201718, -74.0014426], "m": "walk", "d": "Architecture cast-iron, boutiques, shopping.", "q": "SoHo Broadway New York"}, {"name": "Nolita", "ll": [40.7224, -73.9954], "m": "walk", "d": "Boutiques pointues, jolies rues. Bonus.", "q": "Nolita New York", "bonus": true}, {"name": "Little Italy", "ll": [40.7191, -73.9973], "m": "walk", "d": "Mulberry St, terrasses italiennes. Bonus.", "q": "Little Italy Mulberry Street New York", "bonus": true}, {"name": "Chinatown", "ll": [40.7158, -73.997], "m": "walk", "d": "Déjeuner dumplings, marché animé.", "q": "Chinatown Manhattan New York"}, {"name": "Katz's Delicatessen", "ll": [40.7223, -73.9874], "m": "walk", "d": "Deli mythique du Lower East Side. Bonus.", "q": "Katz's Delicatessen New York", "bonus": true}, {"name": "TriBeCa", "ll": [40.7163, -74.0086], "m": "walk", "d": "Belles rues, lofts, ambiance chic.", "q": "Tribeca New York"}, {"name": "Oculus (WTC)", "ll": [40.7117, -74.0111], "m": "walk", "d": "Gare-cathédrale blanche de Calatrava. Bonus.", "q": "Oculus WTC New York", "bonus": true}, {"name": "9/11 Memorial", "ll": [40.7115776, -74.0133362], "m": "walk", "d": "Bassins dans l'empreinte des tours.", "q": "9/11 Memorial New York"}, {"name": "Charging Bull", "ll": [40.7055746, -74.0134499], "m": "walk", "d": "Le taureau de Wall Street. Quartier désert le week-end.", "q": "Charging Bull Wall Street"}, {"name": "Wall Street & NYSE", "ll": [40.7069, -74.0113], "m": "walk", "d": "Bourse, Federal Hall. Bonus.", "q": "Wall Street NYSE New York", "bonus": true}, {"name": "Pier 15 East River", "ll": [40.7043756, -74.0029654], "m": "walk", "d": "Esplanade deux niveaux, vue pont de Brooklyn.", "q": "Pier 15 East River Esplanade New York"}, {"name": "Staten Island Ferry", "ll": [40.7010853, -74.0131012], "m": "walk", "d": "Ferry gratuit, passe près de la Statue. À droite à l'aller.", "q": "Staten Island Ferry Whitehall Terminal"}, {"name": "EDGE Hudson Yards", "ll": [40.7533936, -74.001055], "m": "subway", "d": "COUCHER (20h32). Pont plein air, glass floor. Réserver sunset.", "q": "Edge Hudson Yards New York"}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "dash": false}, {"coords": [[40.7410605, -73.9896986], [40.7201718, -74.0014426]], "dash": false}, {"coords": [[40.7201718, -74.0014426], [40.7224, -73.9954]], "dash": false}, {"coords": [[40.7224, -73.9954], [40.7191, -73.9973]], "dash": false}, {"coords": [[40.7191, -73.9973], [40.7158, -73.997]], "dash": false}, {"coords": [[40.7158, -73.997], [40.7223, -73.9874]], "dash": false}, {"coords": [[40.7223, -73.9874], [40.7163, -74.0086]], "dash": false}, {"coords": [[40.7163, -74.0086], [40.7117, -74.0111]], "dash": false}, {"coords": [[40.7117, -74.0111], [40.7115776, -74.0133362]], "dash": false}, {"coords": [[40.7115776, -74.0133362], [40.7055746, -74.0134499]], "dash": false}, {"coords": [[40.7055746, -74.0134499], [40.7069, -74.0113]], "dash": false}, {"coords": [[40.7069, -74.0113], [40.7043756, -74.0029654]], "dash": false}, {"coords": [[40.7043756, -74.0029654], [40.7010853, -74.0131012]], "dash": false}, {"coords": [[40.7010853, -74.0131012], [40.7533936, -74.001055]], "dash": true}]}, {"name": "Dim 28 — Central Park / Gospel & départ", "color": "#911eb4", "meta": "CHOIX matin : run OU gospel · départ 16h30", "stops": [{"name": "Gospel — Abyssinian / First Corinthian", "ll": [40.803, -73.9536], "m": "subway", "d": "CHOIX A (alternative au run). Gospel Harlem dim. matin, le seul jour possible. Abyssinian 11h (~13h30, tendu avec vol 16h30) ou First Corinthian 10h (plus court). Tenue correcte. Si tu choisis le gospel, tu sautes le run.", "q": "First Corinthian Baptist Church Harlem", "bonus": true}, {"name": "Central Park — entrée sud", "ll": [40.7681, -73.9794], "m": "subway", "d": "CHOIX B (par défaut). Départ run ~7h (métro/taxi aller). Columbus Circle. Grande boucle ~10 km.", "q": "Central Park New York"}, {"name": "Bethesda Terrace", "ll": [40.774, -73.9709], "m": "run", "d": "Terrasse et fontaine emblématiques. Bonus.", "q": "Bethesda Terrace Central Park", "bonus": true}, {"name": "Museum Mile (Upper East Side)", "ll": [40.7794, -73.9632], "m": "run", "d": "Flanc est de la boucle : Met, Frick, Guggenheim alignés sur la 5e Ave. Bonus.", "q": "Museum Mile Upper East Side New York", "bonus": true}, {"name": "Réservoir J. K. Onassis", "ll": [40.7857, -73.9627], "m": "run", "d": "Boucle 2,5 km, reflets skyline.", "q": "Central Park Reservoir running New York"}, {"name": "Strawberry Fields", "ll": [40.7758, -73.9756], "m": "run", "d": "Mémorial John Lennon, mosaïque Imagine. Bonus.", "q": "Strawberry Fields Central Park", "bonus": true}, {"name": "Upper West Side", "ll": [40.7769, -73.9813], "m": "run", "d": "Descente en courant le long de Columbus Ave.", "q": "Upper West Side New York"}, {"name": "West Village", "ll": [40.7358, -74.0036], "m": "run", "d": "Fin de boucle dans le Village. Taxi/métro si fatigue.", "q": "West Village New York"}, {"n": "H", "name": "Hôtel — douche, brunch, valises", "ll": [40.73345, -73.99857], "m": "run", "d": "Départ JFK ~13h pour vol 16h30."}], "_segs": [{"coords": [[40.803, -73.9536], [40.7681, -73.9794]], "dash": true}, {"coords": [[40.7681, -73.9794], [40.774, -73.9709]], "dash": false}, {"coords": [[40.774, -73.9709], [40.7794, -73.9632]], "dash": false}, {"coords": [[40.7794, -73.9632], [40.7857, -73.9627]], "dash": false}, {"coords": [[40.7857, -73.9627], [40.7758, -73.9756]], "dash": false}, {"coords": [[40.7758, -73.9756], [40.7769, -73.9813]], "dash": false}, {"coords": [[40.7769, -73.9813], [40.7358, -74.0036]], "dash": false}, {"coords": [[40.7358, -74.0036], [40.73345, -73.99857]], "dash": false}]}, {"name": "Détours lointains (option journée/demi-journée)", "color": "#42d4f4", "meta": "si une journée se libère", "stops": [{"name": "Roosevelt Island (téléphérique)", "ll": [40.761, -73.951], "m": "subway", "d": "Tramway aérien au-dessus de l'East River, vue insolite sur Manhattan. Court, original.", "q": "Roosevelt Island Tramway New York", "bonus": true}, {"name": "Long Island City (Queens)", "ll": [40.747, -73.954], "m": "subway", "d": "Gantry Plaza : la meilleure vue frontale sur la skyline de Midtown. MoMA PS1 à proximité.", "q": "Gantry Plaza State Park Long Island City", "bonus": true}, {"name": "Flushing / Queens", "ll": [40.7596, -73.83], "m": "subway", "d": "Chinatown de Queens, le plus authentique. Food incroyable.", "q": "Flushing Queens Chinatown", "bonus": true}, {"name": "Yankee Stadium (Bronx)", "ll": [40.8296, -73.9262], "m": "subway", "d": "Stade mythique du baseball. Bronx accessible en métro ligne 4/B/D.", "q": "Yankee Stadium Bronx", "bonus": true}, {"name": "Coney Island (Brooklyn)", "ll": [40.5749, -73.9857], "m": "subway", "d": "Plage, fête foraine rétro, boardwalk, hot-dogs Nathan's. ~1h de métro mais dépaysant.", "q": "Coney Island Brooklyn boardwalk", "bonus": true}], "_segs": [{"coords": [[40.761, -73.951], [40.747, -73.954]], "dash": true}, {"coords": [[40.747, -73.954], [40.7596, -73.83]], "dash": true}, {"coords": [[40.7596, -73.83], [40.8296, -73.9262]], "dash": true}, {"coords": [[40.8296, -73.9262], [40.5749, -73.9857]], "dash": true}]}];
+
+const CATICON={
+  view:"🌆", museum:"🖼️", food:"🍽️", park:"🌳", hotel:"🏨",
+  show:"🎭", transport:"🚉", monument:"📸", neighborhood:"🏙️",
+  run:"🏃", church:"⛪", shop:"🛍️"
+};
+const CATLABEL={
+  view:"Point de vue / tour", museum:"Musée", food:"Repas / pause",
+  park:"Parc / chill", hotel:"Hôtel", show:"Spectacle / scène",
+  transport:"Gare / ferry", monument:"Monument / spot photo",
+  neighborhood:"Quartier", run:"Course", church:"Gospel / église"
+};
+
+const days=[{"name": "Mer 24 — Village, Hudson & Whitney", "color": "#e6194B", "meta": "~5,5 km à pied", "stops": [{"n": "H", "name": "Hôtel — 103 Waverly Place", "ll": [40.73345, -73.99857], "m": "walk", "d": "Arrivée 16h. Greenwich Village.", "cat": "hotel"}, {"name": "Washington Square Park", "ll": [40.7308838, -73.997332], "m": "walk", "d": "Arche iconique, cœur du Village, ambiance NYU.", "q": "Washington Square Park New York", "cat": "park"}, {"name": "Stonewall Inn", "ll": [40.7338326, -74.0021626], "m": "walk", "d": "Berceau des droits LGBTQ+, à 5 min de l'hôtel.", "q": "Stonewall Inn New York", "cat": "monument"}, {"name": "Whitney Museum", "ll": [40.7396251, -74.0088346], "m": "walk", "d": "Art américain (Hopper, Pollock). Bonus, ferme 18h.", "q": "Whitney Museum New York", "bonus": true, "cat": "museum"}, {"name": "High Line (Gansevoort)", "ll": [40.7394043, -74.0080623], "m": "walk", "d": "Promenade aérienne, jardins.", "q": "High Line Gansevoort New York", "cat": "park"}, {"name": "Chelsea Market", "ll": [40.7424511, -74.0060901], "m": "walk", "d": "Halle gourmande sous la High Line. Bonus.", "q": "Chelsea Market New York", "bonus": true, "cat": "food"}, {"name": "Little Island (Pier 55)", "ll": [40.7420024, -74.010299], "m": "walk", "d": "Parc flottant design sur l'Hudson.", "q": "Little Island Pier 55 New York", "cat": "park"}, {"name": "Vessel & Hudson Yards", "ll": [40.7538, -74.0019], "m": "walk", "d": "Structure en nid d'abeille, plaza moderne. Bonus.", "q": "Vessel Hudson Yards New York", "bonus": true, "cat": "monument"}, {"name": "Grand Central Terminal", "ll": [40.7527, -73.9772], "m": "subway", "d": "Hall majestueux, plafond étoilé. Bonus, sous SUMMIT.", "q": "Grand Central Terminal New York", "bonus": true, "cat": "transport"}, {"name": "SUMMIT One Vanderbilt", "ll": [40.7527746, -73.9787253], "m": "walk", "d": "COUCHER. Sphères miroirs (Air), glass floor, vue face à l'Empire State. ~19h30. Réserver sunset.", "q": "SUMMIT One Vanderbilt", "cat": "view"}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "dash": false}, {"coords": [[40.7308838, -73.997332], [40.7338326, -74.0021626]], "dash": false}, {"coords": [[40.7338326, -74.0021626], [40.7396251, -74.0088346]], "dash": false}, {"coords": [[40.7396251, -74.0088346], [40.7394043, -74.0080623]], "dash": false}, {"coords": [[40.7394043, -74.0080623], [40.7424511, -74.0060901]], "dash": false}, {"coords": [[40.7424511, -74.0060901], [40.7420024, -74.010299]], "dash": false}, {"coords": [[40.7420024, -74.010299], [40.7538, -74.0019]], "dash": false}, {"coords": [[40.7538, -74.0019], [40.7527, -73.9772]], "dash": true}, {"coords": [[40.7527, -73.9772], [40.7527746, -73.9787253]], "dash": false}]}, {"name": "Jeu 25 — MoMA, Guggenheim & Hamilton", "color": "#3cb44b", "meta": "~7 km à pied", "stops": [{"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "subway", "d": "Départ Midtown, métro F/M.", "cat": "hotel"}, {"name": "MoMA", "ll": [40.7614327, -73.9776216], "m": "subway", "d": "Van Gogh, Monet, Picasso. Ouverture 10h30, ~2h30.", "q": "MoMA Museum of Modern Art New York", "cat": "museum"}, {"name": "Guggenheim", "ll": [40.7829796, -73.9589706], "m": "walk", "d": "Bonus. Spirale de F. L. Wright. Si fait, zappe Top of the Rock.", "q": "Guggenheim Museum New York", "bonus": true, "cat": "museum"}, {"name": "St. Patrick's Cathedral", "ll": [40.7585, -73.9759], "m": "walk", "d": "Cathédrale néogothique, 5e Avenue. Bonus.", "q": "St Patrick's Cathedral New York", "bonus": true, "cat": "monument"}, {"name": "Top of the Rock", "ll": [40.7593495, -73.9794087], "m": "walk", "d": "Observatoire Rockefeller en journée. Vue Central Park + Empire State.", "q": "Top of the Rock New York", "cat": "view", "bonus": true}, {"name": "Radio City Music Hall", "ll": [40.7599, -73.9799], "m": "walk", "d": "Salle Art déco mythique. Bonus.", "q": "Radio City Music Hall New York", "bonus": true, "cat": "show"}, {"name": "Bryant Park & NY Public Library", "ll": [40.7536, -73.9832], "m": "walk", "d": "Parc élégant + bibliothèque aux lions. Bonus.", "q": "Bryant Park New York Public Library", "bonus": true, "cat": "park"}, {"name": "Times Square", "ll": [40.7579747, -73.9855426], "m": "walk", "d": "À voir de nuit avant le théâtre.", "q": "Times Square New York", "cat": "monument"}, {"name": "Richard Rodgers — Hamilton", "ll": [40.7590916, -73.9865404], "m": "walk", "d": "Hamilton, 19h. ~2h45.", "q": "Richard Rodgers Theatre New York", "cat": "show"}, {"name": "Empire State Building (nuit)", "ll": [40.7484405, -73.9856644], "m": "walk", "d": "Après le spectacle, vue de nuit. Ouvert tard.", "q": "Empire State Building New York", "cat": "view", "bonus": true}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "dash": true}, {"coords": [[40.7614327, -73.9776216], [40.7829796, -73.9589706]], "dash": false}, {"coords": [[40.7829796, -73.9589706], [40.7585, -73.9759]], "dash": false}, {"coords": [[40.7585, -73.9759], [40.7593495, -73.9794087]], "dash": false}, {"coords": [[40.7593495, -73.9794087], [40.7599, -73.9799]], "dash": false}, {"coords": [[40.7599, -73.9799], [40.7536, -73.9832]], "dash": false}, {"coords": [[40.7536, -73.9832], [40.7579747, -73.9855426]], "dash": false}, {"coords": [[40.7579747, -73.9855426], [40.7590916, -73.9865404]], "dash": false}, {"coords": [[40.7590916, -73.9865404], [40.7484405, -73.9856644]], "dash": false}]}, {"name": "Ven 26 — Brooklyn à vélo & jazz", "color": "#4363d8", "meta": "~7 km marche + 6 km vélo (+ run option)", "stops": [{"name": "Run Central Park (option, tôt)", "ll": [40.7857, -73.9627], "m": "run", "d": "Bonus. Run matinal tôt au réservoir avant Brooklyn, si l'envie. Taxi/métro aller-retour.", "q": "Central Park Reservoir running New York", "bonus": true, "cat": "run"}, {"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Citi Bike vers le pont.", "cat": "hotel"}, {"name": "Pont de Brooklyn", "ll": [40.7060855, -73.9968643], "m": "bike", "d": "Traversée à vélo, tours gothiques, skyline.", "q": "Brooklyn Bridge New York", "cat": "monument"}, {"name": "DUMBO", "ll": [40.7033164, -73.9881451], "m": "bike", "d": "Quartier pavé, vue Manhattan Bridge, Jane's Carousel.", "q": "DUMBO Brooklyn", "cat": "neighborhood"}, {"name": "Brooklyn Bridge Park", "ll": [40.7022422, -73.9958601], "m": "walk", "d": "Parc waterfront, meilleure skyline de Manhattan.", "q": "Brooklyn Bridge Park New York", "cat": "park"}, {"name": "Brooklyn Heights Promenade", "ll": [40.6964173, -73.9977463], "m": "walk", "d": "Esplanade suspendue, vue Lower Manhattan et Statue.", "q": "Brooklyn Heights Promenade", "cat": "park"}, {"name": "Williamsburg (Bedford Ave)", "ll": [40.717, -73.9569], "m": "bike", "d": "Rue branchée, friperies, cafés, street art. Bonus.", "q": "Bedford Avenue Williamsburg Brooklyn", "bonus": true, "cat": "neighborhood"}, {"name": "Domino Park", "ll": [40.7148803, -73.967851], "m": "walk", "d": "Parc reconverti, vue Williamsburg Bridge.", "q": "Domino Park Williamsburg Brooklyn", "cat": "park"}, {"name": "Village Vanguard", "ll": [40.7360334, -74.0016548], "m": "subway", "d": "Club de jazz légendaire, 20h. À 8 min de l'hôtel.", "q": "Village Vanguard New York", "cat": "show"}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "dash": false}, {"coords": [[40.7060855, -73.9968643], [40.7033164, -73.9881451]], "dash": false}, {"coords": [[40.7033164, -73.9881451], [40.7022422, -73.9958601]], "dash": false}, {"coords": [[40.7022422, -73.9958601], [40.6964173, -73.9977463]], "dash": false}, {"coords": [[40.6964173, -73.9977463], [40.717, -73.9569]], "dash": false}, {"coords": [[40.717, -73.9569], [40.7148803, -73.967851]], "dash": false}, {"coords": [[40.7148803, -73.967851], [40.7360334, -74.0016548]], "dash": true}]}, {"name": "Sam 27 — Sud iconique & EDGE", "color": "#f58231", "meta": "run + respiration AM · sud allégé PM", "stops": [{"name": "Run Central Park (matin)", "ll": [40.7857, -73.9627], "m": "taxi", "d": "Grande boucle ou réservoir, tôt. Taxi aller. La matinée reste volontairement respirante : run, café, rien d'imposé.", "cat": "run"}, {"name": "Hôtel — douche + matinée libre", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Retour, douche, brunch tranquille dans le Village. Demi-journée de respiration assumée avant le parcours sud de l'après-midi.", "cat": "hotel"}, {"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "walk", "d": "Départ à pied vers le sud. Financial District calme le week-end.", "cat": "hotel"}, {"name": "Flatiron Building", "ll": [40.7410605, -73.9896986], "m": "walk", "d": "Immeuble triangulaire iconique, Madison Square Park.", "q": "Flatiron Building New York", "cat": "monument"}, {"name": "SoHo (Broadway)", "ll": [40.7201718, -74.0014426], "m": "walk", "d": "Architecture cast-iron, boutiques, shopping.", "q": "SoHo Broadway New York", "cat": "neighborhood"}, {"name": "Nolita", "ll": [40.7224, -73.9954], "m": "walk", "d": "Boutiques pointues, jolies rues. Bonus.", "q": "Nolita New York", "bonus": true, "cat": "neighborhood"}, {"name": "Little Italy", "ll": [40.7191, -73.9973], "m": "walk", "d": "Mulberry St, terrasses italiennes. Bonus.", "q": "Little Italy Mulberry Street New York", "bonus": true, "cat": "neighborhood"}, {"name": "Chinatown", "ll": [40.7158, -73.997], "m": "walk", "d": "Déjeuner dumplings, marché animé.", "q": "Chinatown Manhattan New York", "cat": "neighborhood"}, {"name": "Katz's Delicatessen", "ll": [40.7223, -73.9874], "m": "walk", "d": "Deli mythique du Lower East Side. Bonus.", "q": "Katz's Delicatessen New York", "bonus": true, "cat": "food"}, {"name": "TriBeCa", "ll": [40.7163, -74.0086], "m": "walk", "d": "Belles rues, lofts, ambiance chic.", "q": "Tribeca New York", "cat": "neighborhood"}, {"name": "Oculus (WTC)", "ll": [40.7117, -74.0111], "m": "walk", "d": "Gare-cathédrale blanche de Calatrava. Bonus.", "q": "Oculus WTC New York", "bonus": true, "cat": "transport"}, {"name": "9/11 Memorial", "ll": [40.7115776, -74.0133362], "m": "walk", "d": "Bassins dans l'empreinte des tours.", "q": "9/11 Memorial New York", "cat": "monument"}, {"name": "Charging Bull", "ll": [40.7055746, -74.0134499], "m": "walk", "d": "Le taureau de Wall Street. Quartier désert le week-end.", "q": "Charging Bull Wall Street", "cat": "monument"}, {"name": "Wall Street & NYSE", "ll": [40.7069, -74.0113], "m": "walk", "d": "Bourse, Federal Hall. Bonus.", "q": "Wall Street NYSE New York", "bonus": true, "cat": "monument"}, {"name": "Pier 15 East River", "ll": [40.7043756, -74.0029654], "m": "walk", "d": "Esplanade deux niveaux, vue pont de Brooklyn.", "q": "Pier 15 East River Esplanade New York", "cat": "park", "bonus": true}, {"name": "Staten Island Ferry", "ll": [40.7010853, -74.0131012], "m": "walk", "d": "Ferry gratuit, passe près de la Statue. À droite à l'aller.", "q": "Staten Island Ferry Whitehall Terminal", "cat": "transport"}, {"name": "EDGE Hudson Yards", "ll": [40.7533936, -74.001055], "m": "subway", "d": "COUCHER (20h32). Pont plein air, glass floor. Avec SUMMIT mer 24, ce sont les 2 tours retenues (Top of the Rock et Empire State deviennent optionnels pour ne pas saturer). Réserver sunset.", "q": "Edge Hudson Yards New York", "cat": "view"}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "dash": false}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "dash": false}, {"coords": [[40.7410605, -73.9896986], [40.7201718, -74.0014426]], "dash": false}, {"coords": [[40.7201718, -74.0014426], [40.7224, -73.9954]], "dash": false}, {"coords": [[40.7224, -73.9954], [40.7191, -73.9973]], "dash": false}, {"coords": [[40.7191, -73.9973], [40.7158, -73.997]], "dash": false}, {"coords": [[40.7158, -73.997], [40.7223, -73.9874]], "dash": false}, {"coords": [[40.7223, -73.9874], [40.7163, -74.0086]], "dash": false}, {"coords": [[40.7163, -74.0086], [40.7117, -74.0111]], "dash": false}, {"coords": [[40.7117, -74.0111], [40.7115776, -74.0133362]], "dash": false}, {"coords": [[40.7115776, -74.0133362], [40.7055746, -74.0134499]], "dash": false}, {"coords": [[40.7055746, -74.0134499], [40.7069, -74.0113]], "dash": false}, {"coords": [[40.7069, -74.0113], [40.7043756, -74.0029654]], "dash": false}, {"coords": [[40.7043756, -74.0029654], [40.7010853, -74.0131012]], "dash": false}, {"coords": [[40.7010853, -74.0131012], [40.7533936, -74.001055]], "dash": true}]}, {"name": "Dim 28 — Gospel Harlem & départ", "color": "#911eb4", "meta": "gospel + transit JFK · vol 16h30", "stops": [{"n": "H", "name": "Hôtel — check-out", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Départ avec les bagages vers Harlem. Vol 16h30 donc pas de retour à l'hôtel ensuite.", "cat": "hotel"}, {"name": "Consigne bagages (125th St)", "ll": [40.809, -73.949], "m": "taxi", "d": "Dépôt des valises près de 125th St (Bounce / Stasher / LuggageHero, ~5-8 $/bag, à réserver en ligne avant). Évite de remonter à l'hôtel.", "cat": "transport"}, {"name": "Gospel — Abyssinian / First Corinthian", "ll": [40.8166821, -73.9415561], "m": "walk", "d": "L'expérience la plus singulière du séjour. Abyssinian 11h (file dès 9h45, ~13h30) ou First Corinthian 10h (plus court). Tenue correcte : pas de short, débardeur, sac à dos.", "cat": "church"}, {"name": "Déjeuner soul food (Sylvia's / Red Rooster)", "ll": [40.8086445, -73.944479], "m": "walk", "d": "Le spot des locaux le dimanche midi, après l'office. Sylvia's (institution) ou Red Rooster (plus tendance). Cornbread, fried chicken, ambiance.", "cat": "food"}, {"name": "Récup bagages + taxi JFK", "ll": [40.809, -73.949], "m": "walk", "d": "Reprise des valises ~14h30, puis taxi direct Harlem → JFK (~50 min). Arrivée aéroport ~15h30 pour vol 16h30 (serré mais ok si gospel court ou départ anticipé du déjeuner).", "cat": "transport"}, {"name": "Run Central Park (OPTION, si pas de gospel)", "ll": [40.7857, -73.9627], "m": "taxi", "d": "ALTERNATIVE. Si vous renoncez au gospel, run matinal au réservoir puis retour. Mais le gospel est le choix recommandé ici, plus rare.", "cat": "run", "bonus": true}], "_segs": [{"coords": [[40.73345, -73.99857], [40.809, -73.949]], "dash": true}, {"coords": [[40.809, -73.949], [40.8166821, -73.9415561]], "dash": false}, {"coords": [[40.8166821, -73.9415561], [40.8086445, -73.944479]], "dash": false}, {"coords": [[40.8086445, -73.944479], [40.809, -73.949]], "dash": false}, {"coords": [[40.809, -73.949], [40.7857, -73.9627]], "dash": true}]}, {"name": "Détours lointains (option journée/demi-journée)", "color": "#42d4f4", "meta": "si une journée se libère", "stops": [{"name": "Roosevelt Island (téléphérique)", "ll": [40.761, -73.951], "m": "subway", "d": "Tramway aérien au-dessus de l'East River, vue insolite sur Manhattan. Court, original.", "q": "Roosevelt Island Tramway New York", "bonus": true, "cat": "view"}, {"name": "Long Island City (Queens)", "ll": [40.747, -73.954], "m": "subway", "d": "Gantry Plaza : la meilleure vue frontale sur la skyline de Midtown. MoMA PS1 à proximité.", "q": "Gantry Plaza State Park Long Island City", "bonus": true, "cat": "neighborhood"}, {"name": "Flushing / Queens", "ll": [40.7596, -73.83], "m": "subway", "d": "Chinatown de Queens, le plus authentique. Food incroyable.", "q": "Flushing Queens Chinatown", "bonus": true, "cat": "neighborhood"}, {"name": "Yankee Stadium (Bronx)", "ll": [40.8296, -73.9262], "m": "subway", "d": "Stade mythique du baseball. Bronx accessible en métro ligne 4/B/D.", "q": "Yankee Stadium Bronx", "bonus": true, "cat": "show"}, {"name": "Coney Island (Brooklyn)", "ll": [40.5749, -73.9857], "m": "subway", "d": "Plage, fête foraine rétro, boardwalk, hot-dogs Nathan's. ~1h de métro mais dépaysant.", "q": "Coney Island Brooklyn boardwalk", "bonus": true, "cat": "park"}], "_segs": [{"coords": [[40.761, -73.951], [40.747, -73.954]], "dash": true}, {"coords": [[40.747, -73.954], [40.7596, -73.83]], "dash": true}, {"coords": [[40.7596, -73.83], [40.8296, -73.9262]], "dash": true}, {"coords": [[40.8296, -73.9262], [40.5749, -73.9857]], "dash": true}]}];
 
 const map=L.map("map",{zoomControl:true}).setView([40.74,-73.99],12);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",maxZoom:19}).addTo(map);
 
-function makeIcon(color,label,bonus){
-  return L.divIcon({className:"",html:"<div class=\"marker-num "+(bonus?"marker-bonus":"")+"\" style=\"background:"+(bonus?"#c8a24a":color)+"\">"+label+"</div>",iconSize:[24,24],iconAnchor:[12,12],popupAnchor:[0,-12]});
+function makeIcon(color,label,bonus,cat){
+  const em=CATICON[cat]||"📍";
+  const ring=bonus?"border-style:dashed;":"";
+  return L.divIcon({className:"",html:"<div class=\"marker-pin\" style=\"background:"+(bonus?"#c8a24a":color)+";"+ring+"\"><span class=\"pin-em\">"+em+"</span><span class=\"pin-num\">"+label+"</span></div>",iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-15]});
 }
 
 const layers=[]; const allMarkers=[];
@@ -149,9 +225,9 @@ days.forEach((day,di)=>{
   day.stops.forEach(s=>{
     let lab; if(s.n){lab=s.n;} else {counter++;lab=counter;}
     s._lab=lab;
-    const mk=L.marker(s.ll,{icon:makeIcon(day.color,lab,s.bonus)});
+    const mk=L.marker(s.ll,{icon:makeIcon(day.color,lab,s.bonus,s.cat)});
     const qq=s.q?"https://www.google.com/search?tbm=isch&q="+encodeURIComponent(s.q):null;
-    mk.bindPopup("<h3>"+(MODE[s.m]||"")+" "+s.name+"</h3><div class=\"meta\">"+day.name+"</div><div>"+(s.d||"")+"</div>"+(qq?"<a href=\""+qq+"\" target=\"_blank\" rel=\"noopener\">📷 Photos du lieu</a>":""));
+    mk.bindPopup("<h3>"+(CATICON[s.cat]||"")+" "+s.name+"</h3><div class=\"meta\">"+day.name+"</div><div>"+(s.d||"")+"</div>"+(qq?"<a href=\""+qq+"\" target=\"_blank\" rel=\"noopener\">📷 Photos du lieu</a>":""));
     mk.addTo(grp);
     allMarkers.push({mk,di,ll:s.ll});
   });
@@ -160,11 +236,10 @@ days.forEach((day,di)=>{
 
 let activeDay=0;
 function showDay(idx){
-  layers.forEach(l=>{ if(map.hasLayer(l.grp)) map.removeLayer(l.grp); });
+  layers.forEach((l)=>{ if(map.hasLayer(l.grp)) map.removeLayer(l.grp); });
   layers[idx].grp.addTo(map);
   map.fitBounds(L.latLngBounds(layers[idx].pts).pad(0.18));
   activeDay=idx;
-  document.querySelectorAll(".day").forEach((el,i)=>el.classList.toggle("open",i===idx));
 }
 
 const daysEl=document.getElementById("days");
@@ -172,7 +247,7 @@ days.forEach((day,di)=>{
   const wrap=document.createElement("div");wrap.className="day";
   const h=document.createElement("div");h.className="day-h";
   h.innerHTML="<span class=\"dot\" style=\"background:"+day.color+"\"></span>"+day.name+"<span class=\"day-meta\">"+day.meta+"</span>";
-  h.onclick=()=>showDay(di);
+  h.onclick=()=>{ const w=h.parentElement; const wasOpen=w.classList.contains("open"); document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); if(!wasOpen){ w.classList.add("open"); } showDay(di); };
   wrap.appendChild(h);
   const stopsEl=document.createElement("div");stopsEl.className="stops";
   day.stops.forEach(s=>{
@@ -184,17 +259,65 @@ days.forEach((day,di)=>{
   wrap.appendChild(stopsEl);
   daysEl.appendChild(wrap);
 });
-document.getElementById("legend").innerHTML=days.map(d=>"<span style=\"color:"+d.color+"\">●</span> "+d.name).join("<br>");
+
+// légende icônes
+const lgi=document.getElementById("lgIcons");
+if(lgi){ Object.keys(CATLABEL).forEach(k=>{ const d=document.createElement("div"); d.innerHTML="<span>"+CATICON[k]+"</span> "+CATLABEL[k]; lgi.appendChild(d); }); }
+const lgd=document.getElementById("lgDays");
+if(lgd){ lgd.innerHTML=days.map(d=>'<div class="lg-row"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+d.color+'"></span> '+d.name+'</div>').join(""); }
+
 showDay(0);
+document.querySelectorAll('.day').forEach(x=>x.classList.remove('open'));
 
 document.querySelectorAll(".tab").forEach(t=>{
   t.onclick=()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
     t.classList.add("active");
-    if(t.dataset.pane==="guide"){document.body.classList.add("guide");}
-    else{document.body.classList.remove("guide"); setTimeout(()=>map.invalidateSize(),50);}
+    document.body.classList.remove("guide","accueil");
+    const p=t.dataset.pane;
+    if(p==="guide") document.body.classList.add("guide");
+    else if(p==="accueil") document.body.classList.add("accueil");
+    else { document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); setTimeout(()=>map.invalidateSize(),60); }
   };
 });
+// accueil par défaut
+document.body.classList.add("accueil");
+
+// --- géolocalisation ---
+let userMarker=null, userCircle=null, watchId=null, lastPos=null;
+const locBtn=document.getElementById("locBtn");
+const recenterBtn=document.getElementById("recenterBtn");
+function drawUser(lat,lng,acc){
+  lastPos=[lat,lng];
+  if(!userMarker){
+    userMarker=L.circleMarker([lat,lng],{radius:8,color:"#fff",weight:2,fillColor:"#2f6fed",fillOpacity:1}).addTo(map);
+    userCircle=L.circle([lat,lng],{radius:acc||30,color:"#2f6fed",weight:1,fillColor:"#2f6fed",fillOpacity:.12}).addTo(map);
+  } else {
+    userMarker.setLatLng([lat,lng]);
+    userCircle.setLatLng([lat,lng]).setRadius(acc||30);
+  }
+}
+locBtn.onclick=()=>{
+  if(!("geolocation" in navigator)){ alert("Géolocalisation non disponible sur cet appareil."); return; }
+  if(watchId===null){
+    locBtn.textContent="📍 Localisation…";
+    watchId=navigator.geolocation.watchPosition(
+      p=>{ drawUser(p.coords.latitude,p.coords.longitude,p.coords.accuracy);
+           if(locBtn.textContent!=="📍 Suivi actif"){ map.setView([p.coords.latitude,p.coords.longitude],15); }
+           locBtn.textContent="📍 Suivi actif"; locBtn.classList.remove("off");
+           recenterBtn.style.display="block"; },
+      e=>{ locBtn.textContent="📍 Ma position"; locBtn.classList.add("off");
+           alert("Position indisponible. Autorise la localisation dans ton navigateur (et vérifie que la page est bien en https)."); watchId=null; },
+      {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
+    );
+  } else {
+    navigator.geolocation.clearWatch(watchId); watchId=null;
+    locBtn.textContent="📍 Ma position"; locBtn.classList.add("off");
+    recenterBtn.style.display="none";
+  }
+};
+recenterBtn.onclick=()=>{ if(lastPos) map.setView(lastPos,16); };
+
 </script>
 </body>
 </html>
