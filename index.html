@@ -3,321 +3,820 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>NYC 24-28 juin 2026, itinéraire</title>
+<meta name="theme-color" content="#0e1014" />
+<title>New York, nos cœurs mêlés ♥ 24-28 juin 2026</title>
+<meta name="description" content="Notre escapade amoureuse à New York, jour par jour : couchers de soleil au sommet des tours, jazz au Village, Brooklyn à vélo, gospel à Harlem. Un itinéraire vivant qu'on adapte à deux." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="New York, nos cœurs mêlés ♥" />
+<meta property="og:description" content="Notre escapade amoureuse à New York, 24-28 juin 2026. Un itinéraire vivant, des couchers de soleil plein les yeux." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="New York, nos cœurs mêlés ♥" />
+<meta name="twitter:description" content="Notre escapade amoureuse à New York, 24-28 juin 2026." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#0f1115; --panel:#171a21; --ink:#e8eaf0; --muted:#9aa3b2; --line:#262b36; }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-  #app{display:flex;height:100%}
-  #sidebar{width:360px;min-width:360px;height:100%;overflow-y:auto;background:var(--panel);border-right:1px solid var(--line);padding:18px 16px}
-  #map{flex:1;height:100%}
-  h1{font-size:17px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:12px;margin:0 0 14px;line-height:1.5}
-  .modes{font-size:11px;color:var(--muted);margin:0 0 14px;line-height:1.8}
-  .modes span{display:inline-block;margin-right:10px}
-  .day{margin-bottom:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .day-h{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;user-select:none;font-weight:600;font-size:14px}
-  .dot{width:13px;height:13px;border-radius:50%;flex:0 0 auto}
-  .day-meta{color:var(--muted);font-weight:400;font-size:11px;margin-left:auto}
-  .stops{display:none;padding:2px 0 8px}
-  .day.open .stops{display:block}
-  .stop{padding:7px 12px 7px 40px;font-size:12.5px;line-height:1.45;cursor:pointer;position:relative}
-  .stop:hover{background:#1e2230}
-  .stop b{font-weight:600}
-  .stop .n{position:absolute;left:10px;top:7px;font-size:10px;color:var(--muted);font-weight:600;width:22px;text-align:center}
-  .stop .mode{position:absolute;left:10px;top:21px;font-size:11px;width:22px;text-align:center}
-  .stop .desc{color:var(--muted);display:block;margin-top:2px}
-  .stop.bonus b::after{content:" · bonus";color:#c8a24a;font-weight:600;font-size:10px}
-  .legend{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.7}
-  .leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.45}
-  .leaflet-popup-content h3{margin:0 0 5px;font-size:14px}
-  .leaflet-popup-content .meta{color:#666;font-size:11px;margin:0 0 6px}
-  .leaflet-popup-content a{display:inline-block;margin-top:6px;font-size:12px;color:#2f6fed;text-decoration:none}
-  .marker-pin{position:relative;width:30px;height:30px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.55)}
-  .pin-em{font-size:15px;line-height:1}
-  .pin-num{position:absolute;top:-6px;right:-6px;background:#0f1115;color:#fff;border:1px solid #fff;border-radius:50%;min-width:15px;height:15px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 2px}
-  .marker-num{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;border:2px solid #fff;border-radius:50%;width:24px;height:24px;box-shadow:0 1px 4px rgba(0,0,0,.5)}
-  .marker-bonus{border-style:dashed}
-  .legend2{margin-top:14px;font-size:11.5px;color:var(--muted);line-height:1.5}
-  .lg-title{color:var(--ink);font-weight:600;font-size:11.5px;margin:12px 0 6px}
-  .lg-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
-  .lg-grid div,.lg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-  .lg-line{display:inline-block;width:22px;height:0;flex:0 0 auto}
-  .lg-line.solid{border-top:4px solid #9aa3b2}
-  .lg-line.dashed{border-top:2.5px dashed #9aa3b2}
-  .note{background:#1e2230;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:14px}
-
-  .resa{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
-  .resa h2{font-size:13px;margin:0 0 8px;color:var(--ink)}
-  .resa ul{list-style:none;margin:0;padding:0}
-  .resa li{font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:9px}
-  .resa li b{color:var(--ink)}
-  .resa a{color:#2f6fed;text-decoration:none}
-  .resa em{color:#c8a24a;font-style:normal}
-
-  .tabs{display:flex;gap:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
-  .tab{padding:7px 12px;font-size:12.5px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;user-select:none}
-  .tab.active{color:var(--ink);border-bottom-color:#2f6fed;font-weight:600}
-  #pane-guide{display:none;font-size:12.5px;line-height:1.6;color:var(--ink)}
-  #pane-guide h2{font-size:14px;margin:16px 0 6px}
-  #pane-guide h2:first-child{margin-top:0}
-  #pane-guide p{color:var(--muted);margin:0 0 10px}
-  #pane-guide ol,#pane-guide ul{color:var(--muted);margin:0 0 12px;padding-left:20px}
-  #pane-guide li{margin-bottom:5px}
-  #pane-guide code{background:#1e2230;padding:1px 5px;border-radius:4px;font-size:11.5px;color:#e8eaf0}
-  #pane-guide b{color:var(--ink)}
-  body.guide #pane-itineraire{display:none}
-  body.guide #pane-guide{display:block}
-
-  #pane-accueil{display:none;font-size:13.5px;line-height:1.7;color:var(--ink)}
-  body.accueil #pane-itineraire{display:none}
-  body.accueil #pane-guide{display:none}
-  body.accueil #pane-accueil{display:block}
-  #pane-accueil .lead{font-size:15px;color:var(--ink);line-height:1.6;margin:0 0 16px;font-weight:500}
-  #pane-accueil p{color:var(--muted);margin:0 0 13px}
-  #pane-accueil .sig{color:#c8a24a;font-style:italic;margin-top:18px;font-size:13px}
-  #pane-accueil h2{font-size:13px;margin:18px 0 6px;color:var(--ink)}
-  #pane-accueil ul{color:var(--muted);padding-left:18px;margin:0 0 12px}
-  #pane-accueil li{margin-bottom:5px}
-  .geo-btn{position:absolute;z-index:1000;right:12px;bottom:24px;display:flex;flex-direction:column;gap:8px}
-  .geo-btn button{background:#171a21;color:#e8eaf0;border:1px solid #2f6fed;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
-  .geo-btn button:active{background:#2f6fed}
-  .geo-btn button.off{border-color:#262b36;color:#9aa3b2}
-    @media(max-width:760px){
-    #app{flex-direction:column;height:100%;height:100dvh}
-    #sidebar{width:100%;min-width:0;height:auto;max-height:46%;border-right:0;border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch}
-    #map{height:54%;min-height:300px}
-    .tab{padding:10px 14px;font-size:13.5px}
-    .stop{padding-top:9px;padding-bottom:9px}
-    .day-h{padding:13px 12px}
-    .geo-btn button{padding:12px 14px;font-size:14px}
-    .leaflet-popup-content{font-size:13.5px}
-  }
+:root{
+  --bg:#0e1014; --bg2:#15181f; --panel:#171b22; --card:#1c212b;
+  --ink:#eef1f6; --ink2:#aeb6c4; --muted:#7d8696; --line:#2a313d;
+  --accent:#ff5d8f; --accent2:#ffb86b; --gold:#e8b45a; --blue:#5b8cff; --green:#54d18c;
+  --r:14px; --shadow:0 6px 24px rgba(0,0,0,.4);
+  --serif:"Fraunces",Georgia,serif; --sans:"Inter",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:var(--sans);background:var(--bg);color:var(--ink);overscroll-behavior:none}
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.topbar{flex:0 0 auto;padding:14px 18px;padding-top:max(14px,env(safe-area-inset-top));background:linear-gradient(160deg,#1a1f29,#12151c);border-bottom:1px solid var(--line)}
+.topbar h1{font-family:var(--serif);font-weight:600;font-size:19px;margin:0;line-height:1.2}
+.topbar h1 .heart{color:var(--accent)}
+.topbar .nest{color:var(--ink2);font-size:12.5px;margin-top:3px}
+.topbar .nest .pin{color:var(--accent2)}
+.tabs{flex:0 0 auto;display:flex;gap:2px;padding:0 10px;background:var(--bg2);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:13px 16px;font-size:13.5px;font-weight:600;color:var(--muted);border-bottom:2.5px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent)}
+#main{flex:1 1 auto;display:flex;min-height:0;position:relative}
+#panel{width:400px;min-width:400px;height:100%;overflow-y:auto;background:var(--panel);border-right:1px solid var(--line);-webkit-overflow-scrolling:touch}
+#mapwrap{flex:1;position:relative;min-height:0}
+#map{position:absolute;inset:0}
+.panel-pad{padding:18px 16px 60px}
+#view-accueil{display:none}
+.hero{font-family:var(--serif);font-size:23px;line-height:1.32;font-weight:600;margin:4px 0 18px;background:linear-gradient(120deg,#ffd2e0,#ffe7c9 60%,#cfe0ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.prose p{color:var(--ink2);font-size:14.5px;line-height:1.75;margin:0 0 14px}
+.prose .accentline{color:var(--ink)}
+.daylist{list-style:none;padding:0;margin:18px 0 0}
+.daylist li{display:flex;gap:11px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);line-height:1.5}
+.daylist li:last-child{border-bottom:1px solid var(--line)}
+.daylist .d{font-weight:700;color:var(--ink);min-width:62px;flex:0 0 auto}
+.signature{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--accent2);margin-top:22px;text-align:center}
+.section-h{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink);margin:26px 0 10px}
+.day{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:10px;background:var(--card)}
+.day-head{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer;user-select:none}
+.day-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.day-titles{flex:1;min-width:0}
+.day-name{font-family:var(--serif);font-weight:600;font-size:15.5px;line-height:1.2}
+.day-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+.day-chev{color:var(--muted);font-size:13px;transition:transform .2s}
+.day.open .day-chev{transform:rotate(90deg)}
+.day-body{display:none;border-top:1px solid var(--line)}
+.day.open .day-body{display:block}
+.day-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--line)}
+.startat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+.startat input{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 7px;font-size:12.5px;font-family:var(--sans)}
+.tool-btn{background:transparent;border:1px solid var(--line);color:var(--ink2);border-radius:9px;padding:6px 10px;font-size:11.5px;font-weight:600;cursor:pointer}
+.tool-btn:active{transform:scale(.96)}
+.tool-btn.reset{margin-left:auto}
+.tool-btn.here{border-color:var(--green);color:var(--green)}
+.daytotal{padding:8px 14px;font-size:11.5px;color:var(--ink2);background:rgba(255,93,143,.06);border-bottom:1px solid var(--line)}
+.daytotal b{color:var(--ink)}
+.stop{position:relative;padding:11px 14px 12px 52px;border-bottom:1px solid rgba(255,255,255,.04)}
+.stop:last-child{border-bottom:0}
+.stop.off{opacity:.52;background:rgba(255,255,255,.015)}
+.stop.off .stop-name{color:var(--ink2)}
+.stop.past{opacity:.4}
+.stop.dragging{opacity:.5;background:rgba(255,93,143,.08)}
+.stop.dragover{box-shadow:inset 0 2px 0 var(--accent)}
+.stop .badge{position:absolute;left:12px;top:12px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff2;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.stop .time{font-size:12px;font-weight:700;color:var(--accent2);font-variant-numeric:tabular-nums}
+.stop-row1{display:flex;align-items:baseline;gap:8px}
+.stop-name{font-weight:600;font-size:14px}
+.stop-name.openmap-link{font-size:14px;color:var(--ink);cursor:pointer}
+.stop.off .stop-name.openmap-link{color:var(--ink2)}
+.stop-meta{font-size:11px;color:var(--muted);margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.stop-meta .fix{color:var(--gold);font-weight:700}
+.runkm{color:var(--green);font-weight:600}
+.stop-desc{font-size:12.5px;color:var(--ink2);line-height:1.55;margin-top:6px}
+.stop-desc .addhint{color:var(--gold);font-style:italic}
+.lvl-tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.lvl-bonus{background:rgba(232,180,90,.16);color:var(--gold)}
+.lvl-bonus2{background:rgba(91,140,255,.16);color:var(--blue)}
+.stop-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+.stop-toggle{position:relative;width:38px;height:22px;border-radius:20px;background:var(--line);cursor:pointer;transition:.18s;flex:0 0 auto}
+.stop-toggle::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.18s}
+.stop-toggle.on{background:var(--accent)}
+.stop-toggle.on::after{left:18px}
+.toggle-label{font-size:11px;color:var(--muted)}
+.duredit{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.duredit input{width:54px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:3px 5px;font-size:11px;font-family:var(--sans)}
+.fixedit{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gold)}
+.fixedit input{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:3px 5px;font-size:11px;font-family:var(--sans)}
+.drag-handle{position:absolute;left:12px;bottom:12px;color:var(--muted);font-size:15px;cursor:grab;touch-action:none;user-select:none}
+.openmap-link{font-size:11px;color:var(--blue);text-decoration:none;cursor:pointer}
+.travel-line{display:flex;align-items:center;gap:7px;padding:3px 14px 3px 52px;font-size:11px;color:var(--muted)}
+.travel-line .tl{flex:1;height:1px;border-top:1.5px dashed var(--line)}
+.gap-line{color:var(--accent2)}
+.reserve a{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--blue);text-decoration:none;background:rgba(91,140,255,.1);padding:4px 9px;border-radius:8px;margin:6px 6px 0 0}
+.photos a{font-size:11.5px;color:var(--accent);text-decoration:none}
+.block{font-size:13.5px;color:var(--ink2);line-height:1.7}
+.block h3{font-family:var(--serif);font-size:15px;color:var(--ink);margin:20px 0 8px}
+.block h3:first-child{margin-top:0}
+.block ul{padding-left:18px;margin:0 0 14px}
+.block li{margin-bottom:6px}
+.block code{background:var(--bg);padding:2px 6px;border-radius:6px;font-size:12px}
+.lg-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:6px 0 14px}
+.lg-grid div{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2)}
+.lg-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px;color:var(--ink2)}
+.lg-line{display:inline-block;width:26px;flex:0 0 auto}
+.lg-line.solid{border-top:4px solid var(--muted)}
+.lg-line.dashed{border-top:2.5px dashed var(--muted)}
+.resa li{margin-bottom:9px;font-size:12.5px;color:var(--ink2)}
+.resa-counter{font-size:12.5px;color:var(--ink2);background:rgba(255,93,143,.08);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:12px}
+.resa-counter b{color:var(--accent)}
+.resa-counter.full{background:rgba(84,209,140,.12)}
+.resa-counter.full b{color:var(--green)}
+.resa-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.resa-item.done{opacity:.7}
+.resa-main{flex:1;min-width:0}
+.resa-title{font-weight:600;font-size:13.5px;color:var(--ink)}
+.resa-item.done .resa-title{color:var(--green)}
+.resa-info{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.resa-link{display:inline-block;margin-top:4px;font-size:11.5px;color:var(--blue);text-decoration:none}
+.resa-btn{flex:0 0 auto;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.resa-btn:active{transform:scale(.96)}
+.resa-btn.undo{border-color:var(--green);color:#fff;background:var(--green)}
+.resa-check{color:var(--green);font-weight:700;font-size:11px;margin-left:4px}
+.resa b{color:var(--ink)} .resa a{color:var(--blue);text-decoration:none} .resa em{color:var(--gold);font-style:normal}
+.packlist{list-style:none;padding:0;margin:0}
+.packlist li{padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink2);display:flex;gap:9px;align-items:flex-start}
+.packlist li span.i{font-size:15px;flex:0 0 auto}
+.mapbtns{position:absolute;z-index:600;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.mapbtns button{background:rgba(23,27,34,.94);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:10px 13px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.mapbtns button:active{transform:scale(.96)}
+.mapbtns button.locon{border-color:var(--blue);color:var(--blue)}
+.layerctl{position:absolute;z-index:600;left:12px;top:12px}
+.layerctl select{background:rgba(23,27,34,.94);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px;font-family:var(--sans);backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+.fab-map{display:none}
+.pin{position:relative;width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+.pin .em{transform:rotate(-45deg);font-size:14px;line-height:1}
+.pin .num{position:absolute;top:-7px;right:-7px;transform:rotate(-45deg);background:#0e1014;color:#fff;border:1px solid #fff;border-radius:50%;min-width:15px;height:15px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 2px}
+.pin.bonus{border-style:dashed}
+.pin.off{opacity:.3;filter:grayscale(.6)}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--ink);border-radius:12px}
+.leaflet-popup-tip{background:var(--card)}
+.leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.5}
+.leaflet-popup-content h3{font-family:var(--serif);font-size:15px;margin:0 0 5px}
+.leaflet-popup-content .pm{color:var(--muted);font-size:11px;margin:0 0 6px}
+.leaflet-popup-content a{color:var(--blue);text-decoration:none;font-size:12px}
+.cta{display:block;width:100%;margin-top:22px;padding:15px;border:0;border-radius:14px;background:linear-gradient(120deg,var(--accent),#ff8a6b);color:#fff;font-size:15px;font-weight:700;font-family:var(--sans);cursor:pointer;box-shadow:0 6px 20px rgba(255,93,143,.35)}
+.cta:active{transform:scale(.98)}
+.tool-btn.rest{border-color:var(--green);color:var(--green)}
+.alt-badge{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;background:rgba(84,209,140,.16);color:var(--green);text-transform:uppercase;letter-spacing:.4px}
+.modal-bg{position:fixed;inset:0;background:rgba(8,10,14,.72);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.show{display:flex}
+.gps-banner{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:1900;display:flex;align-items:center;gap:12px;max-width:min(560px,calc(100vw - 24px));background:linear-gradient(160deg,#1d2530,#151a22);border:1px solid var(--green);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.9,.3,1.2);opacity:0}
+.gps-banner.show{transform:translateX(-50%) translateY(0);opacity:1}
+.gps-txt{font-size:13px;line-height:1.35;color:var(--ink);flex:1}
+.gps-txt b{color:var(--green)}
+.gps-acts{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.gps-go{background:var(--green);color:#0c1117;border:0;border-radius:20px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer}
+.gps-x{background:transparent;color:var(--muted);border:0;font-size:16px;cursor:pointer;padding:4px 6px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:380px;width:100%;padding:20px;box-shadow:var(--shadow)}
+.modal h3{font-family:var(--serif);font-size:17px;margin:0 0 6px}
+.modal p{color:var(--ink2);font-size:13px;margin:0 0 14px;line-height:1.5}
+.modal .opt{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer}
+.modal .opt:active{border-color:var(--accent)}
+.modal .opt small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;margin-top:2px}
+.modal .cancel{width:100%;padding:10px;margin-top:6px;border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
+@media(max-width:820px){
+  #panel{width:100%;min-width:0;border-right:0}
+  #mapwrap{position:fixed;inset:0;z-index:1200;display:none}
+  body.showmap #mapwrap{display:block}
+  body.showmap #panel,body.showmap .tabs,body.showmap .topbar{display:none}
+  .fab-map{display:flex;position:fixed;z-index:1300;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));background:var(--accent);color:#fff;border:0;border-radius:30px;padding:14px 20px;font-size:14px;font-weight:700;box-shadow:var(--shadow);align-items:center;gap:8px;cursor:pointer}
+  body.showmap .fab-map{background:var(--card);color:var(--ink)}
+  .tab{padding:14px 15px;font-size:14px}
+}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="sidebar">
-    <h1>New York, 24-28 juin 2026</h1>
-    <p class="sub">Hôtel : 103 Waverly Place, Greenwich Village. Couchers ~20h30. Départ dim. 16h30 (heure NYC) à confirmer.</p>
-    <div class="tabs"><div class="tab active" data-pane="accueil">Accueil</div><div class="tab" data-pane="itineraire">Itinéraire</div><div class="tab" data-pane="guide">Guide</div></div>
-
-    <div id="pane-accueil">
-      <p class="lead">Quatre jours et demi à New York, à deux pas l'un de l'autre.</p>
-      <p>L'idée n'est pas de tout cocher, mais de traverser la ville ensemble : un coucher de soleil chaque soir tout en haut d'une tour, du jazz dans une cave du Village, un pont franchi à vélo au matin, une course dans Central Park quand la ville s'éveille.</p>
-      <p>On a fait le choix de ne pas tout remplir : une matinée reste libre pour courir, flâner, ne rien décider.  Les journées sont pensées par zones pour ne pas courir après le métro, et chaque jour garde des étapes « bonus » qu'on fait ou qu'on laisse, selon l'envie et la lumière. Rien n'est figé. On choisit au moment, la main dans la main.</p>
-      <h2>Le fil des jours</h2>
-      <ul>
-        <li><b>Mer 24</b> — Arrivée, le Village et l'Hudson, premier coucher au SUMMIT.</li>
-        <li><b>Jeu 25</b> — Musées, Times Square la nuit, Hamilton.</li>
-        <li><b>Ven 26</b> — Brooklyn à vélo, le jazz au Village Vanguard.</li>
-        <li><b>Sam 27</b> — Le sud de l'île, la Statue au loin, coucher à l'EDGE.</li>
-        <li><b>Dim 28</b> — Gospel à Harlem, soul food entre les locaux, puis l'avion.</li>
-      </ul>
-      <p class="sig">Bon voyage à vous deux.</p>
-    </div>
-
-    <div id="pane-itineraire">
-    <div class="modes"><span>🚶 à pied</span><span>🚲 vélo</span><span>🚇 métro</span><span>🚕 taxi</span><span>🏃 run</span></div>
-    <div id="days"></div>
-    
-<div class="legend2">
-  <div class="lg-title">Icônes</div>
-  <div class="lg-grid" id="lgIcons"></div>
-  <div class="lg-title">Tracés</div>
-  <div class="lg-row"><span class="lg-line solid"></span> À pied / à vélo / en courant</div>
-  <div class="lg-row"><span class="lg-line dashed"></span> Métro ou taxi (indicatif)</div>
-  <div class="lg-title">Repères de durée</div>
-  <div class="lg-row">🏃 run Central Park : boucle 2,5 km (réservoir) à 10 km (grande boucle)</div>
-  <div class="lg-row">🚲 Brooklyn à vélo : ~6 km, 30-40 min de selle</div>
-  <div class="lg-row">🚶 journées à pied : 5 à 13 km selon le jour</div>
-  <div class="lg-title">Jours</div>
-  <div id="lgDays"></div>
+<div class="topbar">
+  <h1>New York, nos cœurs mêlés <span class="heart">♥</span></h1>
+  <div class="nest"><span class="pin">♥</span> Notre nid : 103 Waverly Place, Greenwich Village · 24-28 juin 2026</div>
 </div>
-
-    
-<div class="resa">
-  <h2>Réservations & arrivées conseillées</h2>
-  <ul>
-    <li><b>SUMMIT One Vanderbilt</b> — mer 24, arrivée <b>~19h30</b> (coucher 20h30). <a href="https://summitov.com" target="_blank" rel="noopener">summitov.com</a> · créneau « Sunset », option Ascent conseillée. <em>Sunset week-end : réserver vite.</em></li>
-    <li><b>Top of the Rock</b> — jeu 25, arrivée <b>~14h</b> (journée). <a href="https://www.topoftherocknyc.com" target="_blank" rel="noopener">topoftherocknyc.com</a> · créneau journée, pas besoin du premium sunset.</li>
-    <li><b>Empire State Building</b> — jeu 25, <b>~22h</b> (après Hamilton, vue de nuit). <a href="https://www.esbnyc.com" target="_blank" rel="noopener">esbnyc.com</a> · billet 86e étage, vérifier la dernière montée.</li>
-    <li><b>EDGE Hudson Yards</b> — sam 27, arrivée <b>~19h30</b> (coucher 20h32). <a href="https://www.edgenyc.com" target="_blank" rel="noopener">edgenyc.com</a> · créneau « Sunset ». <em>Réserver vite.</em></li>
-    <li><b>MoMA</b> — jeu 25, ouverture <b>10h30</b>. <a href="https://www.moma.org" target="_blank" rel="noopener">moma.org</a></li>
-    <li><b>Whitney</b> (bonus) — mer 24, ferme 18h. <a href="https://whitney.org" target="_blank" rel="noopener">whitney.org</a></li>
-    <li><b>Guggenheim</b> (bonus) — jeu 25, après MoMA. <a href="https://www.guggenheim.org" target="_blank" rel="noopener">guggenheim.org</a></li>
-    <li><b>Hamilton</b> — jeu 25, <b>19h</b>, Richard Rodgers Theatre. <em>Déjà réservé.</em></li>
-    <li><b>Village Vanguard</b> — ven 26, <b>20h</b>. <a href="https://villagevanguard.com" target="_blank" rel="noopener">villagevanguard.com</a> · <em>Déjà réservé.</em></li>
-    <li><b>Citi Bike</b> — ven 26. App « Citi Bike » ou <a href="https://citibikenyc.com" target="_blank" rel="noopener">citibikenyc.com</a> · Day/3-Day Pass. Attention e-bikes surfacturés.</li>
-    <li><b>Gospel Abyssinian</b> (option dim) — service 11h, file dès 9h45. <a href="https://www.abyssinian.org" target="_blank" rel="noopener">abyssinian.org</a> · <em>Vérifier si résa visiteur en ligne requise.</em></li>
-    <li><b>Staten Island Ferry</b> — sam 27, ~17h. Gratuit, sans billet, Whitehall Terminal.</li>
-    <li><b>OMNY (métro/bus)</b> — tap téléphone ou CB sans contact au tourniquet. Plafond auto 35 $/pers sur 7 j. Rien à acheter.</li>
-  </ul>
+<div class="tabs">
+  <div class="tab active" data-v="accueil">Accueil</div>
+  <div class="tab" data-v="guide">Guide &amp; valise</div>
+  <div class="tab" data-v="itineraire">Itinéraire</div>
+  <div class="tab" data-v="resa">Réservations</div>
 </div>
-
-    <div class="note">Tracés calés sur les rues (pied/vélo/run) et le trajet routier (métro/taxi, pointillé, indicatif). Étapes « bonus » intégrées au fil, zappables au feeling. Le dernier bloc regroupe les détours lointains pour une journée qui se libère. Liens « Photos » = Google Images.</div>
-    </div>
-
-    <div id="pane-guide">
-      <h2>Ouvrir la carte</h2>
-      <p>Onglet <b>Itinéraire</b> ci-dessus. Tout est autonome, aucune connexion nécessaire une fois la page chargée.</p>
-      <h2>Comment ça marche</h2>
-      <ul>
-        <li><b>Clique un jour</b> à gauche pour l'afficher seul sur la carte.</li>
-        <li><b>Clique un lieu</b> pour le centrer et ouvrir sa fiche (résumé + lien Photos).</li>
-        <li>L'icône à gauche de chaque étape = mode pour s'y rendre : 🚶 pied, 🚲 vélo, 🚇 métro, 🚕 taxi, 🏃 course.</li>
-        <li>Tracés <b>pleins</b> = pied/vélo/course. <b>Pointillés</b> = métro/taxi (indicatif).</li>
-        <li>Étapes <b>bonus</b> (point doré) = incontournables enchaînés, à faire ou sauter selon l'énergie.</li>
-        <li>Dernier bloc <b>Détours lointains</b> = Roosevelt Island, Queens, Bronx, Coney Island, si une journée se libère.</li>
+<div id="main">
+  <div id="panel">
+    <div id="view-accueil" class="panel-pad">
+      <div class="hero">Quatre jours et demi à New York, à deux, nos cœurs mêlés.</div>
+      <div class="prose">
+        <p>L'idée est de traverser la ville ensemble : un coucher de soleil chaque soir tout en haut d'une tour, du jazz dans une cave du Village, un pont franchi à vélo au matin, une course dans Central Park quand la ville s'éveille.</p>
+        <p>On fait les choix qui nous plaisent sur le moment, et on reviendra pour tout remplir. Les journées sont pensées par zones pour prendre notre temps, et chaque jour garde des étapes <b>bonus</b> qu'on fait ou qu'on laisse, selon l'envie et la lumière.</p>
+        <p class="accentline">Rien n'est figé. On choisit au moment, la main dans la main.</p>
+      </div>
+      <div class="section-h">Le fil des jours</div>
+      <ul class="daylist">
+        <li><span class="d">Mer 24</span><span>Arrivée, le Village et l'Hudson, premier coucher au SUMMIT.</span></li>
+        <li><span class="d">Jeu 25</span><span>Musées, Times Square la nuit, Hamilton.</span></li>
+        <li><span class="d">Ven 26</span><span>Brooklyn à vélo, le jazz au Village Vanguard.</span></li>
+        <li><span class="d">Sam 27</span><span>Run Central Park, le sud de l'île, la Statue au loin, coucher à l'EDGE.</span></li>
+        <li><span class="d">Dim 28</span><span>Gospel à Harlem, soul food entre les locaux, puis l'avion.</span></li>
       </ul>
-      <h2>Les cinq jours</h2>
-      <ul>
-        <li><b>Mer 24</b> — Arrivée midi. Village, Hudson, High Line, coucher au SUMMIT.</li>
-        <li><b>Jeu 25</b> — MoMA, options Guggenheim et Harlem, Times Square de nuit, Hamilton 19h, Empire State de nuit.</li>
-        <li><b>Ven 26</b> — Brooklyn à vélo, jazz au Village Vanguard 20h.</li>
-        <li><b>Sam 27</b> — Manhattan sud, ferry gratuit vers la Statue, coucher à l'EDGE.</li>
-        <li><b>Dim 28</b> — Boucle running Central Park (ou gospel Harlem), départ (vol 16h30, hôtel ~13h).</li>
-      </ul>
-      <h2>Mettre à jour la page en ligne</h2>
-      <p>Ré-upload le fichier <code>index.html</code> avec le même nom dans le dépôt, commit, patiente une à deux minutes.</p>
+      <div class="signature">Bon voyage à nous, amoureux explorateurs ♥</div>
+      <button id="ctaStart" class="cta">Ouvrir notre itinéraire →</button>
     </div>
-
+    <div id="view-itineraire" class="panel-pad">
+      <div id="days"></div>
+      <div class="section-h">Repères</div>
+      <div class="block">
+        <h3>Les icônes</h3><div class="lg-grid" id="lgIcons"></div>
+        <h3>Les tracés</h3>
+        <div class="lg-row"><span class="lg-line solid"></span> À pied, à vélo, en courant</div>
+        <div class="lg-row"><span class="lg-line dashed"></span> Métro ou taxi (indicatif)</div>
+        <h3>Tout est souple</h3>
+        <p style="color:var(--ink2);font-size:12.5px;line-height:1.65">Active ou retire chaque étape d'un geste, ajuste sa durée, glisse-la pour changer l'ordre, le trajet et les horaires se recalculent aussitôt. « Reste de la journée » repart de l'instant présent ou de l'étape où vous êtes. « Parcours initial » remet tout à zéro. Les rendez-vous fixes sont en doré, leur heure est modifiable.</p>
+      </div>
+    </div>
+    <div id="view-resa" class="panel-pad">
+      <div class="block resa">
+        <h3>À réserver ♥</h3>
+        <p style="color:var(--ink2);font-size:12.5px;line-height:1.6;margin:0 0 12px">Quand c'est réservé, touche « C'est réservé » : la ligne se marque, l'étape de l'itinéraire affiche une coche, et le compteur se met à jour. Pense à reporter l'heure exacte dans l'étape (champ doré). Tout se partage.</p>
+        <div id="resaCounter" class="resa-counter"></div>
+        <div id="resaList"></div>
+      </div>
+    </div>
+    <div id="view-guide" class="panel-pad">
+      <div class="block">
+        <h3>Comment ça marche</h3>
+        <ul>
+          <li>Touche un jour pour l'ouvrir, il s'affiche seul sur la carte.</li>
+          <li>Chaque étape : son <b>interrupteur</b> l'ajoute ou la retire, son champ <b>durée</b> ajuste le temps sur place, on la <b>glisse</b> pour changer l'ordre.</li>
+          <li>Les horaires et trajets se recalculent à chaque changement.</li>
+          <li><b>Reste de la journée</b> repart de maintenant ou de l'étape où vous êtes. <b>Parcours initial</b> remet tout à zéro.</li>
+          <li>Les <b>rendez-vous fixes</b> (doré) gardent leur heure, modifiable d'un geste.</li>
+        </ul>
+        <h3>Sur le téléphone</h3>
+        <ul>
+          <li>Le bouton <b>Carte</b> affiche ou masque la carte plein écran.</li>
+          <li><b>Vue du jour</b> recentre sur la journée, <b>Ma position</b> affiche votre point bleu et vous suit.</li>
+          <li>En haut à gauche de la carte, choisissez le <b>fond de plan</b> (sombre, clair, satellite, plan détaillé).</li>
+        </ul>
+        <h3>Notre escapade en bref</h3>
+        <ul>
+          <li><b>Mer 24</b> · Arrivée, le Village et l'Hudson, la High Line, premier coucher au SUMMIT.</li>
+          <li><b>Jeu 25</b> · Le MoMA et ses chefs-d'œuvre, Times Square illuminé, Hamilton à Broadway.</li>
+          <li><b>Ven 26</b> · Brooklyn à vélo, le pont, DUMBO, et le jazz au Village Vanguard.</li>
+          <li><b>Sam 27</b> · Course dans Central Park, le sud de l'île, la Statue au fil de l'eau, coucher à l'EDGE.</li>
+          <li><b>Dim 28</b> · Gospel vibrant à Harlem, soul food entre les locaux, puis l'envol vers la maison.</li>
+        </ul>
+        <h3>Notre valise ♥</h3>
+        <ul class="packlist">
+          <li><span class="i">👟</span> De bonnes chaussures de marche, on va arpenter la ville avec bonheur (jusqu'à 13 km un jour).</li>
+          <li><span class="i">🏃</span> La tenue de course et les baskets, pour Central Park au réveil de la ville.</li>
+          <li><span class="i">👗</span> Une tenue un peu chic pour Hamilton et les soirées au sommet des tours.</li>
+          <li><span class="i">☀</span> Lunettes de soleil et une petite laine, les soirées en hauteur sont fraîches.</li>
+          <li><span class="i">📱</span> Le téléphone chargé et un OMNY prêt (Apple Pay / Google Pay) pour le métro.</li>
+          <li><span class="i">💳</span> Une carte sans contact, et de quoi régler les couchers et les douceurs.</li>
+          <li><span class="i">💵</span> Quelques dollars en liquide pour les food stalls et les pourboires.</li>
+          <li><span class="i">📷</span> De quoi capturer chaque instant, la lumière de New York est inoubliable.</li>
+          <li><span class="i">👚</span> Une tenue soignée pour le gospel du dimanche (épaules couvertes, pas de short).</li>
+          <li><span class="i">🍾</span> Une bouteille d'eau réutilisable, pour rester légers et hydratés.</li>
+          <li><span class="i">💖</span> Et surtout, tout ton cœur d'amour si magnifique, le plus précieux du voyage.</li>
+        </ul>
+        <h3>Mettre la page à jour en ligne</h3>
+        <p>Réuploader le fichier <code>index.html</code> avec le même nom dans le dépôt, valider (commit), patienter une à deux minutes.</p>
+      </div>
+    </div>
   </div>
-  <div id="map"></div>
-  <div class="geo-btn"><button id="locBtn" class="off">📍 Ma position</button><button id="recenterBtn" style="display:none">🎯 Recentrer</button></div>
+  <div id="mapwrap">
+    <div id="map"></div>
+    <div class="layerctl"><select id="tileSel"><option value="sombre">Fond sombre</option><option value="clair">Fond clair</option><option value="satellite">Satellite</option><option value="plan">Plan détaillé</option></select></div>
+    <div class="mapbtns">
+      <button id="btnDayView">🗺 Vue du jour</button>
+      <button id="btnLoc">📍 Ma position</button>
+      <button id="btnRecenter" style="display:none">🎯 Me recentrer</button>
+    </div>
+  </div>
 </div>
-
+<button class="fab-map" id="fabMap">🗺 Carte</button>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalContent"></div></div>
+<div id="gpsBanner" class="gps-banner"><div class="gps-txt" id="gpsTxt"></div><div class="gps-acts"><button id="gpsGo" class="gps-go">Recaler</button><button id="gpsX" class="gps-x">✕</button></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const MODE={walk:"🚶",bike:"🚲",subway:"🚇",taxi:"🚕",run:"🏃"};
+const days=[{"name": "Mercredi 24 juin", "sub": "Le Village et l'Hudson, premier coucher au SUMMIT", "color": "#e6194B", "stops": [{"name": "Washington Square Hotel, 103 Waverly Place", "ll": [40.73345, -73.99857], "m": "walk", "cat": "hotel", "lvl": "core", "dur": 0, "desc": "Le point de départ de tout. On pose les valises au cœur de Greenwich Village, le quartier le plus romantique de Manhattan, ruelles arborées et maisons de brique rouge. On respire, et l'aventure commence.", "travel": 0, "hotel_real": true, "gid": "0_0", "origDay": 0}, {"name": "Washington Square Park", "ll": [40.7308838, -73.997332], "m": "walk", "cat": "park", "lvl": "core", "dur": 30, "desc": "La grande arche blanche, la fontaine, les pianistes de rue et les joueurs d'échecs. Le salon à ciel ouvert du Village, vibrant et bohème. Un premier baiser sous l'arche, ça se mérite.", "travel": 4, "gid": "0_1", "origDay": 0}, {"name": "Stonewall Inn", "ll": [40.7338326, -74.0021626], "m": "walk", "cat": "monument", "lvl": "core", "dur": 15, "desc": "À cinq minutes, le lieu fondateur des droits LGBTQ+, devenu monument national. Une façade discrète chargée d'histoire, un verre possible pour trinquer à la liberté.", "travel": 6, "gid": "0_2", "origDay": 0}, {"name": "Whitney Museum", "ll": [40.7396251, -74.0088346], "m": "walk", "cat": "museum", "lvl": "bonus", "dur": 90, "desc": "L'art américain dans toute sa lumière : Hopper, O'Keeffe, Pollock, et des terrasses qui surplombent l'Hudson. Posé au pied de la High Line, parfait pour ouvrir les yeux dès le premier jour.", "travel": 11, "gid": "0_3", "origDay": 0}, {"name": "High Line", "ll": [40.7394043, -74.0080623], "m": "walk", "cat": "park", "lvl": "core", "dur": 40, "desc": "Une ancienne voie ferrée aérienne transformée en jardin suspendu qui serpente entre les immeubles. On marche au-dessus de la ville, main dans la main, entre fleurs sauvages et vues inattendues.", "travel": 1, "gid": "0_4", "origDay": 0}, {"name": "Chelsea Market", "ll": [40.7424511, -74.0060901], "m": "walk", "cat": "food", "lvl": "bonus", "dur": 40, "desc": "Une halle gourmande chaleureuse sous la High Line : tacos, pâtisseries, fruits de mer. L'endroit idéal pour grignoter quelque chose de délicieux à partager.", "travel": 5, "gid": "0_5", "origDay": 0}, {"name": "Little Island", "ll": [40.7420024, -74.010299], "m": "walk", "cat": "park", "lvl": "core", "dur": 30, "desc": "Un parc flottant posé sur des tulipes de béton, au-dessus de l'Hudson. Petites collines, points de vue, amphithéâtre : une bulle de poésie face à l'eau et au soleil qui descend.", "travel": 4, "gid": "0_6", "origDay": 0}, {"name": "Vessel et Hudson Yards", "ll": [40.7538, -74.0019], "m": "walk", "cat": "monument", "lvl": "bonus", "dur": 25, "desc": "La structure en nid d'abeille cuivré, sculpture géante d'escaliers, et la plaza ultramoderne tout autour. Spectaculaire, photogénique, juste au pied de notre première tour.", "travel": 18, "gid": "0_7", "origDay": 0}, {"name": "Grand Central Terminal", "ll": [40.7527, -73.9772], "m": "subway", "cat": "transport", "lvl": "bonus", "dur": 20, "desc": "Le hall cathédrale au plafond bleu étoilé, l'horloge dorée, le ballet des voyageurs. Un chef-d'œuvre Beaux-Arts, et juste au-dessus se dresse notre tour du soir.", "travel": 12, "gid": "0_8", "origDay": 0}, {"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 45, "travel": 0, "desc": "On repasse vite au nid se rafraîchir et enfiler une jolie tenue avant la soirée. Durée modifiable selon l'envie de prendre son temps.", "gid": "0_9", "origDay": 0}, {"name": "SUMMIT One Vanderbilt", "ll": [40.7527746, -73.9787253], "m": "walk", "cat": "view", "lvl": "core", "dur": 75, "fixed_label": "coucher ~20h30", "desc": "Notre premier coucher de soleil tout là-haut. Des salles entièrement miroitées qui démultiplient le ciel, un sol de verre vertigineux, l'Empire State juste en face. La ville s'embrase, et nous avec.", "travel": 2, "fixedTime": "19:30", "gid": "0_10", "origDay": 0}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "dash": false, "min": 4}, {"coords": [[40.7308838, -73.997332], [40.7338326, -74.0021626]], "dash": false, "min": 6}, {"coords": [[40.7338326, -74.0021626], [40.7396251, -74.0088346]], "dash": false, "min": 11}, {"coords": [[40.7396251, -74.0088346], [40.7394043, -74.0080623]], "dash": false, "min": 1}, {"coords": [[40.7394043, -74.0080623], [40.7424511, -74.0060901]], "dash": false, "min": 5}, {"coords": [[40.7424511, -74.0060901], [40.7420024, -74.010299]], "dash": false, "min": 4}, {"coords": [[40.7420024, -74.010299], [40.7538, -74.0019]], "dash": false, "min": 18}, {"coords": [[40.7538, -74.0019], [40.7527, -73.9772]], "dash": true, "min": 12}, {"coords": [[40.7527, -73.9772], [40.7527746, -73.9787253]], "dash": false, "min": 2}], "_matrix": [[{"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "min": 4}, {"coords": [[40.73345, -73.99857], [40.7338326, -74.0021626]], "min": 4}, {"coords": [[40.73345, -73.99857], [40.7396251, -74.0088346]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7394043, -74.0080623]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.7424511, -74.0060901]], "min": 15}, {"coords": [[40.73345, -73.99857], [40.7420024, -74.010299]], "min": 17}, {"coords": [[40.73345, -73.99857], [40.7538, -74.0019]], "min": 28}, {"coords": [[40.73345, -73.99857], [40.7527, -73.9772]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7527746, -73.9787253]], "min": 34}], [{"coords": [[40.7308838, -73.997332], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7308838, -73.997332]], "min": 0}, {"coords": [[40.7308838, -73.997332], [40.7338326, -74.0021626]], "min": 6}, {"coords": [[40.7308838, -73.997332], [40.7396251, -74.0088346]], "min": 17}, {"coords": [[40.7308838, -73.997332], [40.7394043, -74.0080623]], "min": 16}, {"coords": [[40.7308838, -73.997332], [40.7424511, -74.0060901]], "min": 18}, {"coords": [[40.7308838, -73.997332], [40.7420024, -74.010299]], "min": 20}, {"coords": [[40.7308838, -73.997332], [40.7538, -74.0019]], "min": 32}, {"coords": [[40.7308838, -73.997332], [40.7527, -73.9772]], "min": 14}, {"coords": [[40.7308838, -73.997332], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7308838, -73.997332], [40.7527746, -73.9787253]], "min": 36}], [{"coords": [[40.7338326, -74.0021626], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7338326, -74.0021626], [40.7308838, -73.997332]], "min": 6}, {"coords": [[40.7338326, -74.0021626]], "min": 0}, {"coords": [[40.7338326, -74.0021626], [40.7396251, -74.0088346]], "min": 11}, {"coords": [[40.7338326, -74.0021626], [40.7394043, -74.0080623]], "min": 10}, {"coords": [[40.7338326, -74.0021626], [40.7424511, -74.0060901]], "min": 13}, {"coords": [[40.7338326, -74.0021626], [40.7420024, -74.010299]], "min": 14}, {"coords": [[40.7338326, -74.0021626], [40.7538, -74.0019]], "min": 27}, {"coords": [[40.7338326, -74.0021626], [40.7527, -73.9772]], "min": 14}, {"coords": [[40.7338326, -74.0021626], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7338326, -74.0021626], [40.7527746, -73.9787253]], "min": 36}], [{"coords": [[40.7396251, -74.0088346], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7396251, -74.0088346], [40.7308838, -73.997332]], "min": 17}, {"coords": [[40.7396251, -74.0088346], [40.7338326, -74.0021626]], "min": 11}, {"coords": [[40.7396251, -74.0088346]], "min": 0}, {"coords": [[40.7396251, -74.0088346], [40.7394043, -74.0080623]], "min": 1}, {"coords": [[40.7396251, -74.0088346], [40.7424511, -74.0060901]], "min": 5}, {"coords": [[40.7396251, -74.0088346], [40.7420024, -74.010299]], "min": 4}, {"coords": [[40.7396251, -74.0088346], [40.7538, -74.0019]], "min": 21}, {"coords": [[40.7396251, -74.0088346], [40.7527, -73.9772]], "min": 14}, {"coords": [[40.7396251, -74.0088346], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7396251, -74.0088346], [40.7527746, -73.9787253]], "min": 36}], [{"coords": [[40.7394043, -74.0080623], [40.73345, -73.99857]], "min": 13}, {"coords": [[40.7394043, -74.0080623], [40.7308838, -73.997332]], "min": 16}, {"coords": [[40.7394043, -74.0080623], [40.7338326, -74.0021626]], "min": 10}, {"coords": [[40.7394043, -74.0080623], [40.7396251, -74.0088346]], "min": 1}, {"coords": [[40.7394043, -74.0080623]], "min": 0}, {"coords": [[40.7394043, -74.0080623], [40.7424511, -74.0060901]], "min": 5}, {"coords": [[40.7394043, -74.0080623], [40.7420024, -74.010299]], "min": 4}, {"coords": [[40.7394043, -74.0080623], [40.7538, -74.0019]], "min": 21}, {"coords": [[40.7394043, -74.0080623], [40.7527, -73.9772]], "min": 14}, {"coords": [[40.7394043, -74.0080623], [40.73345, -73.99857]], "min": 5}, {"coords": [[40.7394043, -74.0080623], [40.7527746, -73.9787253]], "min": 36}], [{"coords": [[40.7424511, -74.0060901], [40.73345, -73.99857]], "min": 15}, {"coords": [[40.7424511, -74.0060901], [40.7308838, -73.997332]], "min": 18}, {"coords": [[40.7424511, -74.0060901], [40.7338326, -74.0021626]], "min": 13}, {"coords": [[40.7424511, -74.0060901], [40.7396251, -74.0088346]], "min": 5}, {"coords": [[40.7424511, -74.0060901], [40.7394043, -74.0080623]], "min": 5}, {"coords": [[40.7424511, -74.0060901]], "min": 0}, {"coords": [[40.7424511, -74.0060901], [40.7420024, -74.010299]], "min": 4}, {"coords": [[40.7424511, -74.0060901], [40.7538, -74.0019]], "min": 16}, {"coords": [[40.7424511, -74.0060901], [40.7527, -73.9772]], "min": 13}, {"coords": [[40.7424511, -74.0060901], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7424511, -74.0060901], [40.7527746, -73.9787253]], "min": 32}], [{"coords": [[40.7420024, -74.010299], [40.73345, -73.99857]], "min": 17}, {"coords": [[40.7420024, -74.010299], [40.7308838, -73.997332]], "min": 20}, {"coords": [[40.7420024, -74.010299], [40.7338326, -74.0021626]], "min": 14}, {"coords": [[40.7420024, -74.010299], [40.7396251, -74.0088346]], "min": 4}, {"coords": [[40.7420024, -74.010299], [40.7394043, -74.0080623]], "min": 4}, {"coords": [[40.7420024, -74.010299], [40.7424511, -74.0060901]], "min": 4}, {"coords": [[40.7420024, -74.010299]], "min": 0}, {"coords": [[40.7420024, -74.010299], [40.7538, -74.0019]], "min": 18}, {"coords": [[40.7420024, -74.010299], [40.7527, -73.9772]], "min": 14}, {"coords": [[40.7420024, -74.010299], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7420024, -74.010299], [40.7527746, -73.9787253]], "min": 36}], [{"coords": [[40.7538, -74.0019], [40.73345, -73.99857]], "min": 28}, {"coords": [[40.7538, -74.0019], [40.7308838, -73.997332]], "min": 32}, {"coords": [[40.7538, -74.0019], [40.7338326, -74.0021626]], "min": 27}, {"coords": [[40.7538, -74.0019], [40.7396251, -74.0088346]], "min": 21}, {"coords": [[40.7538, -74.0019], [40.7394043, -74.0080623]], "min": 21}, {"coords": [[40.7538, -74.0019], [40.7424511, -74.0060901]], "min": 16}, {"coords": [[40.7538, -74.0019], [40.7420024, -74.010299]], "min": 18}, {"coords": [[40.7538, -74.0019]], "min": 0}, {"coords": [[40.7538, -74.0019], [40.7527, -73.9772]], "min": 12}, {"coords": [[40.7538, -74.0019], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7538, -74.0019], [40.7527746, -73.9787253]], "min": 24}], [{"coords": [[40.7527, -73.9772], [40.73345, -73.99857]], "min": 35}, {"coords": [[40.7527, -73.9772], [40.7308838, -73.997332]], "min": 37}, {"coords": [[40.7527, -73.9772], [40.7338326, -74.0021626]], "min": 37}, {"coords": [[40.7527, -73.9772], [40.7396251, -74.0088346]], "min": 37}, {"coords": [[40.7527, -73.9772], [40.7394043, -74.0080623]], "min": 37}, {"coords": [[40.7527, -73.9772], [40.7424511, -74.0060901]], "min": 33}, {"coords": [[40.7527, -73.9772], [40.7420024, -74.010299]], "min": 37}, {"coords": [[40.7527, -73.9772], [40.7538, -74.0019]], "min": 26}, {"coords": [[40.7527, -73.9772]], "min": 0}, {"coords": [[40.7527, -73.9772], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7527, -73.9772], [40.7527746, -73.9787253]], "min": 2}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "min": 4}, {"coords": [[40.73345, -73.99857], [40.7338326, -74.0021626]], "min": 4}, {"coords": [[40.73345, -73.99857], [40.7396251, -74.0088346]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7394043, -74.0080623]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.7424511, -74.0060901]], "min": 15}, {"coords": [[40.73345, -73.99857], [40.7420024, -74.010299]], "min": 17}, {"coords": [[40.73345, -73.99857], [40.7538, -74.0019]], "min": 28}, {"coords": [[40.73345, -73.99857], [40.7527, -73.9772]], "min": 13}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7527746, -73.9787253]], "min": 34}], [{"coords": [[40.7527746, -73.9787253], [40.73345, -73.99857]], "min": 34}, {"coords": [[40.7527746, -73.9787253], [40.7308838, -73.997332]], "min": 36}, {"coords": [[40.7527746, -73.9787253], [40.7338326, -74.0021626]], "min": 36}, {"coords": [[40.7527746, -73.9787253], [40.7396251, -74.0088346]], "min": 36}, {"coords": [[40.7527746, -73.9787253], [40.7394043, -74.0080623]], "min": 36}, {"coords": [[40.7527746, -73.9787253], [40.7424511, -74.0060901]], "min": 32}, {"coords": [[40.7527746, -73.9787253], [40.7420024, -74.010299]], "min": 36}, {"coords": [[40.7527746, -73.9787253], [40.7538, -74.0019]], "min": 24}, {"coords": [[40.7527746, -73.9787253], [40.7527, -73.9772]], "min": 8}, {"coords": [[40.7527746, -73.9787253], [40.73345, -73.99857]], "min": 9}, {"coords": [[40.7527746, -73.9787253]], "min": 0}]]}, {"name": "Jeudi 25 juin", "sub": "Musées, Times Square la nuit, Hamilton", "color": "#3cb44b", "stops": [{"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "walk", "cat": "hotel", "lvl": "core", "dur": 0, "hotel_real": true, "desc": "On s'éveille au nid d'amour, point de départ de la journée.", "gid": "1_0", "origDay": 1}, {"name": "Run au bord de l'Hudson", "ll": [40.7332, -74.0107], "m": "walk", "cat": "run", "lvl": "core", "dur": 45, "desc": "Course matinale au bord de l'eau sur la promenade de l'Hudson (Pier 45), à huit minutes du nid. Piste plate et dégagée, la lumière dorée sur le fleuve. La distance possible s'affiche selon le temps qu'on se donne.", "pace": 6.833, "gid": "1_1", "origDay": 1}, {"name": "Guggenheim", "ll": [40.7829796, -73.9589706], "m": "walk", "cat": "museum", "lvl": "bonus2", "dur": 80, "desc": "La spirale blanche de Frank Lloyd Wright, un bâtiment qui est lui-même une œuvre d'art. On monte en colimaçon le long des collections, doux et hypnotique. À ajouter si l'envie de deux musées dans la journée.", "travel": 35, "gid": "1_2", "origDay": 1}, {"name": "Washington Square Hotel", "ll": [40.73345, -73.99857], "m": "subway", "cat": "hotel", "lvl": "core", "dur": 0, "desc": "Réveil en douceur, café, puis cap sur Midtown.", "travel": 0, "hotel_real": true, "gid": "1_3", "origDay": 1}, {"name": "MoMA", "ll": [40.7614327, -73.9776216], "m": "subway", "cat": "museum", "lvl": "core", "dur": 150, "desc": "Le temple de l'art moderne : la Nuit étoilée de Van Gogh, les Nymphéas de Monet, Picasso, Warhol. Deux heures et demie de pure beauté, à s'émerveiller ensemble devant les chefs-d'œuvre du siècle.", "travel": 15, "earliest": "10:30", "gid": "1_4", "origDay": 1}, {"name": "St. Patrick's Cathedral", "ll": [40.7585, -73.9759], "m": "walk", "cat": "monument", "lvl": "bonus", "dur": 20, "desc": "La cathédrale néogothique au cœur de la Cinquième Avenue, flèches de dentelle blanche et vitraux lumineux. Une parenthèse de calme et de grandeur entre deux gratte-ciels.", "travel": 38, "gid": "1_5", "origDay": 1}, {"name": "Top of the Rock", "ll": [40.7593495, -73.9794087], "m": "walk", "cat": "view", "lvl": "bonus", "dur": 75, "desc": "La terrasse du Rockefeller, sans doute la plus belle vue de jour : Central Park déroulé d'un côté, l'Empire State pile en face de l'autre. Un panorama qui se grave dans la mémoire.", "travel": 4, "gid": "1_6", "origDay": 1}, {"name": "Radio City Music Hall", "ll": [40.7599, -73.9799], "m": "walk", "cat": "show", "lvl": "bonus2", "dur": 15, "desc": "La façade Art déco illuminée de néons, la plus grande salle de spectacle au monde à son ouverture. Rien qu'en passant devant, on plonge dans le New York des années folles.", "travel": 1, "gid": "1_7", "origDay": 1}, {"name": "Bryant Park et NY Public Library", "ll": [40.7536, -73.9832], "m": "walk", "cat": "park", "lvl": "bonus", "dur": 30, "desc": "Une pelouse élégante entourée de chaises pliantes, et la majestueuse bibliothèque gardée par ses deux lions de marbre. Un coin de douceur très parisien en plein Midtown.", "travel": 9, "gid": "1_8", "origDay": 1}, {"name": "Times Square", "ll": [40.7579747, -73.9855426], "m": "walk", "cat": "monument", "lvl": "core", "dur": 30, "fixed_label": "de nuit", "desc": "L'explosion d'écrans géants, la marée humaine, l'énergie pure de New York. À voir absolument de nuit, quand tout scintille. On lève les yeux, on tourne sur soi-même, on rit.", "travel": 6, "gid": "1_9", "origDay": 1}, {"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 60, "travel": 0, "desc": "On repasse vite au nid se rafraîchir et enfiler une jolie tenue avant la soirée. Durée modifiable selon l'envie de prendre son temps.", "gid": "1_10", "origDay": 1}, {"name": "Hamilton, Richard Rodgers", "ll": [40.7590916, -73.9865404], "m": "walk", "cat": "show", "lvl": "core", "dur": 165, "fixed": true, "fixed_label": "19h00", "desc": "La comédie musicale phénomène, hip-hop et histoire américaine, dans un théâtre mythique de Broadway. Notre grand rendez-vous de la soirée, frissons garantis.", "travel": 2, "fixedTime": "19:00", "gid": "1_11", "origDay": 1}, {"name": "Empire State Building", "ll": [40.7484405, -73.9856644], "m": "walk", "cat": "view", "lvl": "bonus", "dur": 60, "fixed_label": "de nuit ~22h", "desc": "Après le spectacle, l'icône absolue illuminée dans la nuit. La ville scintille à 360°, le vent frais, les lumières à l'infini. Un final romantique au sommet du monde.", "travel": 15, "fixedTime": "22:00", "gid": "1_12", "origDay": 1}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "dash": true, "min": 15}, {"coords": [[40.7614327, -73.9776216], [40.7829796, -73.9589706]], "dash": false, "min": 35}, {"coords": [[40.7829796, -73.9589706], [40.7585, -73.9759]], "dash": false, "min": 38}, {"coords": [[40.7585, -73.9759], [40.7593495, -73.9794087]], "dash": false, "min": 4}, {"coords": [[40.7593495, -73.9794087], [40.7599, -73.9799]], "dash": false, "min": 1}, {"coords": [[40.7599, -73.9799], [40.7536, -73.9832]], "dash": false, "min": 9}, {"coords": [[40.7536, -73.9832], [40.7579747, -73.9855426]], "dash": false, "min": 6}, {"coords": [[40.7579747, -73.9855426], [40.7590916, -73.9865404]], "dash": false, "min": 2}, {"coords": [[40.7590916, -73.9865404], [40.7484405, -73.9856644]], "dash": false, "min": 15}], "_matrix": [[{"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7332, -74.0107]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.7829796, -73.9589706]], "min": 79}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "min": 15}, {"coords": [[40.73345, -73.99857], [40.7585, -73.9759]], "min": 42}, {"coords": [[40.73345, -73.99857], [40.7593495, -73.9794087]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7599, -73.9799]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7536, -73.9832]], "min": 32}, {"coords": [[40.73345, -73.99857], [40.7579747, -73.9855426]], "min": 36}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7590916, -73.9865404]], "min": 37}, {"coords": [[40.73345, -73.99857], [40.7484405, -73.9856644]], "min": 25}], [{"coords": [[40.7332, -74.0107], [40.73345, -73.99857]], "min": 13}, {"coords": [[40.7332, -74.0107]], "min": 0}, {"coords": [[40.7332, -74.0107], [40.7829796, -73.9589706]], "min": 87}, {"coords": [[40.7332, -74.0107], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7332, -74.0107], [40.7614327, -73.9776216]], "min": 16}, {"coords": [[40.7332, -74.0107], [40.7585, -73.9759]], "min": 50}, {"coords": [[40.7332, -74.0107], [40.7593495, -73.9794087]], "min": 48}, {"coords": [[40.7332, -74.0107], [40.7599, -73.9799]], "min": 49}, {"coords": [[40.7332, -74.0107], [40.7536, -73.9832]], "min": 40}, {"coords": [[40.7332, -74.0107], [40.7579747, -73.9855426]], "min": 43}, {"coords": [[40.7332, -74.0107], [40.73345, -73.99857]], "min": 5}, {"coords": [[40.7332, -74.0107], [40.7590916, -73.9865404]], "min": 44}, {"coords": [[40.7332, -74.0107], [40.7484405, -73.9856644]], "min": 33}], [{"coords": [[40.7829796, -73.9589706], [40.73345, -73.99857]], "min": 79}, {"coords": [[40.7829796, -73.9589706], [40.7332, -74.0107]], "min": 87}, {"coords": [[40.7829796, -73.9589706]], "min": 0}, {"coords": [[40.7829796, -73.9589706], [40.73345, -73.99857]], "min": 20}, {"coords": [[40.7829796, -73.9589706], [40.7614327, -73.9776216]], "min": 13}, {"coords": [[40.7829796, -73.9589706], [40.7585, -73.9759]], "min": 38}, {"coords": [[40.7829796, -73.9589706], [40.7593495, -73.9794087]], "min": 39}, {"coords": [[40.7829796, -73.9589706], [40.7599, -73.9799]], "min": 38}, {"coords": [[40.7829796, -73.9589706], [40.7536, -73.9832]], "min": 48}, {"coords": [[40.7829796, -73.9589706], [40.7579747, -73.9855426]], "min": 44}, {"coords": [[40.7829796, -73.9589706], [40.73345, -73.99857]], "min": 18}, {"coords": [[40.7829796, -73.9589706], [40.7590916, -73.9865404]], "min": 44}, {"coords": [[40.7829796, -73.9589706], [40.7484405, -73.9856644]], "min": 55}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7332, -74.0107]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.7829796, -73.9589706]], "min": 79}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "min": 15}, {"coords": [[40.73345, -73.99857], [40.7585, -73.9759]], "min": 42}, {"coords": [[40.73345, -73.99857], [40.7593495, -73.9794087]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7599, -73.9799]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7536, -73.9832]], "min": 32}, {"coords": [[40.73345, -73.99857], [40.7579747, -73.9855426]], "min": 36}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7590916, -73.9865404]], "min": 37}, {"coords": [[40.73345, -73.99857], [40.7484405, -73.9856644]], "min": 25}], [{"coords": [[40.7614327, -73.9776216], [40.73345, -73.99857]], "min": 44}, {"coords": [[40.7614327, -73.9776216], [40.7332, -74.0107]], "min": 52}, {"coords": [[40.7614327, -73.9776216], [40.7829796, -73.9589706]], "min": 35}, {"coords": [[40.7614327, -73.9776216], [40.73345, -73.99857]], "min": 15}, {"coords": [[40.7614327, -73.9776216]], "min": 0}, {"coords": [[40.7614327, -73.9776216], [40.7585, -73.9759]], "min": 4}, {"coords": [[40.7614327, -73.9776216], [40.7593495, -73.9794087]], "min": 3}, {"coords": [[40.7614327, -73.9776216], [40.7599, -73.9799]], "min": 3}, {"coords": [[40.7614327, -73.9776216], [40.7536, -73.9832]], "min": 12}, {"coords": [[40.7614327, -73.9776216], [40.7579747, -73.9855426]], "min": 10}, {"coords": [[40.7614327, -73.9776216], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.7614327, -73.9776216], [40.7590916, -73.9865404]], "min": 10}, {"coords": [[40.7614327, -73.9776216], [40.7484405, -73.9856644]], "min": 20}], [{"coords": [[40.7585, -73.9759], [40.73345, -73.99857]], "min": 42}, {"coords": [[40.7585, -73.9759], [40.7332, -74.0107]], "min": 50}, {"coords": [[40.7585, -73.9759], [40.7829796, -73.9589706]], "min": 38}, {"coords": [[40.7585, -73.9759], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7585, -73.9759], [40.7614327, -73.9776216]], "min": 9}, {"coords": [[40.7585, -73.9759]], "min": 0}, {"coords": [[40.7585, -73.9759], [40.7593495, -73.9794087]], "min": 4}, {"coords": [[40.7585, -73.9759], [40.7599, -73.9799]], "min": 5}, {"coords": [[40.7585, -73.9759], [40.7536, -73.9832]], "min": 10}, {"coords": [[40.7585, -73.9759], [40.7579747, -73.9855426]], "min": 10}, {"coords": [[40.7585, -73.9759], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7585, -73.9759], [40.7590916, -73.9865404]], "min": 11}, {"coords": [[40.7585, -73.9759], [40.7484405, -73.9856644]], "min": 17}], [{"coords": [[40.7593495, -73.9794087], [40.73345, -73.99857]], "min": 41}, {"coords": [[40.7593495, -73.9794087], [40.7332, -74.0107]], "min": 48}, {"coords": [[40.7593495, -73.9794087], [40.7829796, -73.9589706]], "min": 39}, {"coords": [[40.7593495, -73.9794087], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7593495, -73.9794087], [40.7614327, -73.9776216]], "min": 9}, {"coords": [[40.7593495, -73.9794087], [40.7585, -73.9759]], "min": 4}, {"coords": [[40.7593495, -73.9794087]], "min": 0}, {"coords": [[40.7593495, -73.9794087], [40.7599, -73.9799]], "min": 1}, {"coords": [[40.7593495, -73.9794087], [40.7536, -73.9832]], "min": 9}, {"coords": [[40.7593495, -73.9794087], [40.7579747, -73.9855426]], "min": 7}, {"coords": [[40.7593495, -73.9794087], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7593495, -73.9794087], [40.7590916, -73.9865404]], "min": 7}, {"coords": [[40.7593495, -73.9794087], [40.7484405, -73.9856644]], "min": 16}], [{"coords": [[40.7599, -73.9799], [40.73345, -73.99857]], "min": 41}, {"coords": [[40.7599, -73.9799], [40.7332, -74.0107]], "min": 49}, {"coords": [[40.7599, -73.9799], [40.7829796, -73.9589706]], "min": 38}, {"coords": [[40.7599, -73.9799], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7599, -73.9799], [40.7614327, -73.9776216]], "min": 8}, {"coords": [[40.7599, -73.9799], [40.7585, -73.9759]], "min": 5}, {"coords": [[40.7599, -73.9799], [40.7593495, -73.9794087]], "min": 1}, {"coords": [[40.7599, -73.9799]], "min": 0}, {"coords": [[40.7599, -73.9799], [40.7536, -73.9832]], "min": 9}, {"coords": [[40.7599, -73.9799], [40.7579747, -73.9855426]], "min": 6}, {"coords": [[40.7599, -73.9799], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7599, -73.9799], [40.7590916, -73.9865404]], "min": 7}, {"coords": [[40.7599, -73.9799], [40.7484405, -73.9856644]], "min": 17}], [{"coords": [[40.7536, -73.9832], [40.73345, -73.99857]], "min": 32}, {"coords": [[40.7536, -73.9832], [40.7332, -74.0107]], "min": 40}, {"coords": [[40.7536, -73.9832], [40.7829796, -73.9589706]], "min": 48}, {"coords": [[40.7536, -73.9832], [40.73345, -73.99857]], "min": 13}, {"coords": [[40.7536, -73.9832], [40.7614327, -73.9776216]], "min": 10}, {"coords": [[40.7536, -73.9832], [40.7585, -73.9759]], "min": 10}, {"coords": [[40.7536, -73.9832], [40.7593495, -73.9794087]], "min": 9}, {"coords": [[40.7536, -73.9832], [40.7599, -73.9799]], "min": 9}, {"coords": [[40.7536, -73.9832]], "min": 0}, {"coords": [[40.7536, -73.9832], [40.7579747, -73.9855426]], "min": 6}, {"coords": [[40.7536, -73.9832], [40.73345, -73.99857]], "min": 9}, {"coords": [[40.7536, -73.9832], [40.7590916, -73.9865404]], "min": 8}, {"coords": [[40.7536, -73.9832], [40.7484405, -73.9856644]], "min": 8}], [{"coords": [[40.7579747, -73.9855426], [40.73345, -73.99857]], "min": 36}, {"coords": [[40.7579747, -73.9855426], [40.7332, -74.0107]], "min": 43}, {"coords": [[40.7579747, -73.9855426], [40.7829796, -73.9589706]], "min": 44}, {"coords": [[40.7579747, -73.9855426], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7579747, -73.9855426], [40.7614327, -73.9776216]], "min": 9}, {"coords": [[40.7579747, -73.9855426], [40.7585, -73.9759]], "min": 10}, {"coords": [[40.7579747, -73.9855426], [40.7593495, -73.9794087]], "min": 7}, {"coords": [[40.7579747, -73.9855426], [40.7599, -73.9799]], "min": 6}, {"coords": [[40.7579747, -73.9855426], [40.7536, -73.9832]], "min": 6}, {"coords": [[40.7579747, -73.9855426]], "min": 0}, {"coords": [[40.7579747, -73.9855426], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7579747, -73.9855426], [40.7590916, -73.9865404]], "min": 2}, {"coords": [[40.7579747, -73.9855426], [40.7484405, -73.9856644]], "min": 13}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7332, -74.0107]], "min": 13}, {"coords": [[40.73345, -73.99857], [40.7829796, -73.9589706]], "min": 79}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "min": 15}, {"coords": [[40.73345, -73.99857], [40.7585, -73.9759]], "min": 42}, {"coords": [[40.73345, -73.99857], [40.7593495, -73.9794087]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7599, -73.9799]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7536, -73.9832]], "min": 32}, {"coords": [[40.73345, -73.99857], [40.7579747, -73.9855426]], "min": 36}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7590916, -73.9865404]], "min": 37}, {"coords": [[40.73345, -73.99857], [40.7484405, -73.9856644]], "min": 25}], [{"coords": [[40.7590916, -73.9865404], [40.73345, -73.99857]], "min": 37}, {"coords": [[40.7590916, -73.9865404], [40.7332, -74.0107]], "min": 44}, {"coords": [[40.7590916, -73.9865404], [40.7829796, -73.9589706]], "min": 44}, {"coords": [[40.7590916, -73.9865404], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7590916, -73.9865404], [40.7614327, -73.9776216]], "min": 10}, {"coords": [[40.7590916, -73.9865404], [40.7585, -73.9759]], "min": 11}, {"coords": [[40.7590916, -73.9865404], [40.7593495, -73.9794087]], "min": 7}, {"coords": [[40.7590916, -73.9865404], [40.7599, -73.9799]], "min": 7}, {"coords": [[40.7590916, -73.9865404], [40.7536, -73.9832]], "min": 8}, {"coords": [[40.7590916, -73.9865404], [40.7579747, -73.9855426]], "min": 2}, {"coords": [[40.7590916, -73.9865404], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7590916, -73.9865404]], "min": 0}, {"coords": [[40.7590916, -73.9865404], [40.7484405, -73.9856644]], "min": 15}], [{"coords": [[40.7484405, -73.9856644], [40.73345, -73.99857]], "min": 25}, {"coords": [[40.7484405, -73.9856644], [40.7332, -74.0107]], "min": 33}, {"coords": [[40.7484405, -73.9856644], [40.7829796, -73.9589706]], "min": 55}, {"coords": [[40.7484405, -73.9856644], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.7484405, -73.9856644], [40.7614327, -73.9776216]], "min": 11}, {"coords": [[40.7484405, -73.9856644], [40.7585, -73.9759]], "min": 17}, {"coords": [[40.7484405, -73.9856644], [40.7593495, -73.9794087]], "min": 16}, {"coords": [[40.7484405, -73.9856644], [40.7599, -73.9799]], "min": 17}, {"coords": [[40.7484405, -73.9856644], [40.7536, -73.9832]], "min": 8}, {"coords": [[40.7484405, -73.9856644], [40.7579747, -73.9855426]], "min": 13}, {"coords": [[40.7484405, -73.9856644], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7484405, -73.9856644], [40.7590916, -73.9865404]], "min": 15}, {"coords": [[40.7484405, -73.9856644]], "min": 0}]]}, {"name": "Vendredi 26 juin", "sub": "Brooklyn à vélo, le jazz au Village Vanguard", "color": "#4363d8", "stops": [{"name": "Washington Square Hotel", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 20, "desc": "Petit-déjeuner, on attrape un Citi Bike, et en route vers le pont.", "travel": 19, "hotel_real": true, "gid": "2_0", "origDay": 2}, {"name": "Pont de Brooklyn", "ll": [40.7060855, -73.9968643], "m": "bike", "cat": "monument", "lvl": "core", "dur": 35, "desc": "La traversée mythique à vélo, entre les grandes arches néogothiques et les câbles d'acier, la skyline de Manhattan dans le dos. Un des plus beaux moments de tout le séjour.", "travel": 12, "gid": "2_1", "origDay": 2}, {"name": "DUMBO", "ll": [40.7033164, -73.9881451], "m": "bike", "cat": "neighborhood", "lvl": "core", "dur": 40, "desc": "Le quartier pavé sous les ponts, avec la fameuse vue du Manhattan Bridge encadré entre deux immeubles de brique. Cafés, galeries, le carrousel de Jane sous sa bulle de verre.", "travel": 3, "gid": "2_2", "origDay": 2}, {"name": "Brooklyn Bridge Park", "ll": [40.7022422, -73.9958601], "m": "walk", "cat": "park", "lvl": "core", "dur": 35, "desc": "De grandes pelouses au bord de l'eau face à la plus belle skyline du monde. On s'allonge dans l'herbe, on regarde Manhattan scintiller de l'autre côté de l'East River.", "travel": 8, "gid": "2_3", "origDay": 2}, {"name": "Brooklyn Heights Promenade", "ll": [40.6964173, -73.9977463], "m": "walk", "cat": "park", "lvl": "core", "dur": 25, "desc": "Une esplanade suspendue qui offre une vue panoramique sur Lower Manhattan et la Statue de la Liberté au loin. Le balcon secret des amoureux de Brooklyn.", "travel": 8, "gid": "2_4", "origDay": 2}, {"name": "Williamsburg, Bedford Ave", "ll": [40.717, -73.9569], "m": "bike", "cat": "neighborhood", "lvl": "bonus", "dur": 60, "desc": "Le Brooklyn branché et créatif : friperies, disquaires, cafés de spécialité, fresques murales géantes. On flâne, on chine, on s'imprègne de l'énergie arty du quartier.", "travel": 16, "gid": "2_5", "origDay": 2}, {"name": "Domino Park", "ll": [40.7148803, -73.967851], "m": "walk", "cat": "park", "lvl": "bonus", "dur": 25, "desc": "Une ancienne raffinerie de sucre devenue parc design au bord de l'eau, avec une vue superbe sur le Williamsburg Bridge. Parfait pour une pause au soleil.", "travel": 12, "gid": "2_6", "origDay": 2}, {"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 45, "travel": 0, "desc": "On repasse vite au nid se rafraîchir et enfiler une jolie tenue avant la soirée. Durée modifiable selon l'envie de prendre son temps.", "gid": "2_7", "origDay": 2}, {"name": "Village Vanguard", "ll": [40.7360334, -74.0016548], "m": "subway", "cat": "show", "lvl": "core", "dur": 120, "fixed": true, "fixed_label": "20h00", "desc": "La cave de jazz la plus légendaire du monde, ouverte depuis 1935, à huit minutes de notre nid. Lumière tamisée, contrebasse, un set de deux heures lové l'un contre l'autre. Magique.", "travel": 15, "fixedTime": "20:00", "gid": "2_8", "origDay": 2}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true, "min": 19}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "dash": false, "min": 12}, {"coords": [[40.7060855, -73.9968643], [40.7033164, -73.9881451]], "dash": false, "min": 3}, {"coords": [[40.7033164, -73.9881451], [40.7022422, -73.9958601]], "dash": false, "min": 8}, {"coords": [[40.7022422, -73.9958601], [40.6964173, -73.9977463]], "dash": false, "min": 8}, {"coords": [[40.6964173, -73.9977463], [40.717, -73.9569]], "dash": false, "min": 16}, {"coords": [[40.717, -73.9569], [40.7148803, -73.967851]], "dash": false, "min": 12}, {"coords": [[40.7148803, -73.967851], [40.7360334, -74.0016548]], "dash": true, "min": 15}], "_matrix": [[{"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "min": 12}, {"coords": [[40.73345, -73.99857], [40.7033164, -73.9881451]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7022422, -73.9958601]], "min": 43}, {"coords": [[40.73345, -73.99857], [40.6964173, -73.9977463]], "min": 51}, {"coords": [[40.73345, -73.99857], [40.717, -73.9569]], "min": 16}, {"coords": [[40.73345, -73.99857], [40.7148803, -73.967851]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7360334, -74.0016548]], "min": 9}], [{"coords": [[40.7060855, -73.9968643], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7060855, -73.9968643]], "min": 0}, {"coords": [[40.7060855, -73.9968643], [40.7033164, -73.9881451]], "min": 3}, {"coords": [[40.7060855, -73.9968643], [40.7022422, -73.9958601]], "min": 5}, {"coords": [[40.7060855, -73.9968643], [40.6964173, -73.9977463]], "min": 13}, {"coords": [[40.7060855, -73.9968643], [40.717, -73.9569]], "min": 14}, {"coords": [[40.7060855, -73.9968643], [40.7148803, -73.967851]], "min": 33}, {"coords": [[40.7060855, -73.9968643], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7060855, -73.9968643], [40.7360334, -74.0016548]], "min": 14}], [{"coords": [[40.7033164, -73.9881451], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7033164, -73.9881451], [40.7060855, -73.9968643]], "min": 3}, {"coords": [[40.7033164, -73.9881451]], "min": 0}, {"coords": [[40.7033164, -73.9881451], [40.7022422, -73.9958601]], "min": 8}, {"coords": [[40.7033164, -73.9881451], [40.6964173, -73.9977463]], "min": 14}, {"coords": [[40.7033164, -73.9881451], [40.717, -73.9569]], "min": 12}, {"coords": [[40.7033164, -73.9881451], [40.7148803, -73.967851]], "min": 26}, {"coords": [[40.7033164, -73.9881451], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7033164, -73.9881451], [40.7360334, -74.0016548]], "min": 15}], [{"coords": [[40.7022422, -73.9958601], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7022422, -73.9958601], [40.7060855, -73.9968643]], "min": 2}, {"coords": [[40.7022422, -73.9958601], [40.7033164, -73.9881451]], "min": 3}, {"coords": [[40.7022422, -73.9958601]], "min": 0}, {"coords": [[40.7022422, -73.9958601], [40.6964173, -73.9977463]], "min": 8}, {"coords": [[40.7022422, -73.9958601], [40.717, -73.9569]], "min": 15}, {"coords": [[40.7022422, -73.9958601], [40.7148803, -73.967851]], "min": 34}, {"coords": [[40.7022422, -73.9958601], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7022422, -73.9958601], [40.7360334, -74.0016548]], "min": 15}], [{"coords": [[40.6964173, -73.9977463], [40.73345, -73.99857]], "min": 13}, {"coords": [[40.6964173, -73.9977463], [40.7060855, -73.9968643]], "min": 4}, {"coords": [[40.6964173, -73.9977463], [40.7033164, -73.9881451]], "min": 4}, {"coords": [[40.6964173, -73.9977463], [40.7022422, -73.9958601]], "min": 8}, {"coords": [[40.6964173, -73.9977463]], "min": 0}, {"coords": [[40.6964173, -73.9977463], [40.717, -73.9569]], "min": 16}, {"coords": [[40.6964173, -73.9977463], [40.7148803, -73.967851]], "min": 40}, {"coords": [[40.6964173, -73.9977463], [40.73345, -73.99857]], "min": 13}, {"coords": [[40.6964173, -73.9977463], [40.7360334, -74.0016548]], "min": 16}], [{"coords": [[40.717, -73.9569], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.717, -73.9569], [40.7060855, -73.9968643]], "min": 14}, {"coords": [[40.717, -73.9569], [40.7033164, -73.9881451]], "min": 12}, {"coords": [[40.717, -73.9569], [40.7022422, -73.9958601]], "min": 45}, {"coords": [[40.717, -73.9569], [40.6964173, -73.9977463]], "min": 51}, {"coords": [[40.717, -73.9569]], "min": 0}, {"coords": [[40.717, -73.9569], [40.7148803, -73.967851]], "min": 12}, {"coords": [[40.717, -73.9569], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.717, -73.9569], [40.7360334, -74.0016548]], "min": 16}], [{"coords": [[40.7148803, -73.967851], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7148803, -73.967851], [40.7060855, -73.9968643]], "min": 10}, {"coords": [[40.7148803, -73.967851], [40.7033164, -73.9881451]], "min": 8}, {"coords": [[40.7148803, -73.967851], [40.7022422, -73.9958601]], "min": 34}, {"coords": [[40.7148803, -73.967851], [40.6964173, -73.9977463]], "min": 40}, {"coords": [[40.7148803, -73.967851], [40.717, -73.9569]], "min": 4}, {"coords": [[40.7148803, -73.967851]], "min": 0}, {"coords": [[40.7148803, -73.967851], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7148803, -73.967851], [40.7360334, -74.0016548]], "min": 15}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "min": 12}, {"coords": [[40.73345, -73.99857], [40.7033164, -73.9881451]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7022422, -73.9958601]], "min": 43}, {"coords": [[40.73345, -73.99857], [40.6964173, -73.9977463]], "min": 51}, {"coords": [[40.73345, -73.99857], [40.717, -73.9569]], "min": 16}, {"coords": [[40.73345, -73.99857], [40.7148803, -73.967851]], "min": 41}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7360334, -74.0016548]], "min": 9}], [{"coords": [[40.7360334, -74.0016548], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7360334, -74.0016548], [40.7060855, -73.9968643]], "min": 13}, {"coords": [[40.7360334, -74.0016548], [40.7033164, -73.9881451]], "min": 15}, {"coords": [[40.7360334, -74.0016548], [40.7022422, -73.9958601]], "min": 47}, {"coords": [[40.7360334, -74.0016548], [40.6964173, -73.9977463]], "min": 55}, {"coords": [[40.7360334, -74.0016548], [40.717, -73.9569]], "min": 17}, {"coords": [[40.7360334, -74.0016548], [40.7148803, -73.967851]], "min": 46}, {"coords": [[40.7360334, -74.0016548], [40.73345, -73.99857]], "min": 4}, {"coords": [[40.7360334, -74.0016548]], "min": 0}]]}, {"name": "Samedi 27 juin", "sub": "Run Central Park, le sud de l'île, coucher à l'EDGE", "color": "#f58231", "stops": [{"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "walk", "cat": "hotel", "lvl": "core", "dur": 0, "hotel_real": true, "desc": "On s'éveille au nid d'amour, point de départ de la journée.", "gid": "3_0", "origDay": 3}, {"name": "Run dans Central Park", "ll": [40.7857, -73.9627], "m": "taxi", "cat": "run", "lvl": "core", "dur": 60, "desc": "Notre grande course du séjour, quand la ville s'éveille : la boucle du réservoir ou la grande boucle de Central Park, allées vertes et lumière dorée du matin. La distance possible s'affiche selon le temps qu'on se donne.", "travel": 0, "pace": 6.833, "gid": "3_1", "origDay": 3}, {"name": "Washington Square Hotel, douche et temps libre", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 90, "desc": "On rentre, on prend une douche, on traîne au brunch dans le Village. Une matinée volontairement libre, pour ne rien décider et savourer d'être là, ensemble.", "travel": 19, "hotel_real": true, "gid": "3_2", "origDay": 3}, {"name": "Flatiron Building", "ll": [40.7410605, -73.9896986], "m": "walk", "cat": "monument", "lvl": "core", "dur": 20, "desc": "Le célèbre immeuble en fer à repasser, fin comme une lame, planté à la pointe de deux avenues. Une silhouette iconique qui ouvre en beauté notre descente vers le sud.", "travel": 14, "gid": "3_3", "origDay": 3}, {"name": "SoHo", "ll": [40.7201718, -74.0014426], "m": "walk", "cat": "neighborhood", "lvl": "core", "dur": 60, "desc": "Les façades en fonte ouvragée, les pavés, les boutiques de créateurs. Le quartier le plus chic pour flâner, lèche-vitrines et terrasses, un café à la main.", "travel": 31, "gid": "3_4", "origDay": 3}, {"name": "Nolita", "ll": [40.7224, -73.9954], "m": "walk", "cat": "neighborhood", "lvl": "bonus", "dur": 30, "desc": "Le petit frère intime de SoHo : ruelles tranquilles, boutiques pointues, cafés adorables. Un quartier qui respire la douceur de vivre.", "travel": 7, "gid": "3_5", "origDay": 3}, {"name": "Little Italy", "ll": [40.7191, -73.9973], "m": "walk", "cat": "neighborhood", "lvl": "bonus", "dur": 25, "desc": "Mulberry Street et ses terrasses italiennes, nappes à carreaux et cannoli. Une bouffée de dolce vita au cœur de Manhattan.", "travel": 5, "gid": "3_6", "origDay": 3}, {"name": "Chinatown", "ll": [40.7158, -73.997], "m": "walk", "cat": "neighborhood", "lvl": "core", "dur": 50, "desc": "Le quartier le plus dépaysant de la ville : étals colorés, enseignes lumineuses, raviolis vapeur fondants. On déjeune ici, au milieu d'une foule joyeuse et parfumée.", "travel": 5, "gid": "3_7", "origDay": 3}, {"name": "Katz's Delicatessen", "ll": [40.7223, -73.9874], "m": "walk", "cat": "food", "lvl": "bonus2", "dur": 45, "desc": "Le deli mythique du Lower East Side et son légendaire pastrami fondant. Une institution new-yorkaise pleine de caractère, à goûter au moins une fois dans sa vie.", "travel": 13, "gid": "3_8", "origDay": 3}, {"name": "TriBeCa", "ll": [40.7163, -74.0086], "m": "walk", "cat": "neighborhood", "lvl": "core", "dur": 25, "desc": "Les lofts élégants, les rues pavées paisibles, le New York raffiné et discret des artistes et des stars. Une parenthèse chic et sereine.", "travel": 24, "gid": "3_9", "origDay": 3}, {"name": "Oculus", "ll": [40.7117, -74.0111], "m": "walk", "cat": "transport", "lvl": "bonus", "dur": 20, "desc": "La gare blanche de Calatrava, immense colombe de nervures lumineuses qui s'envole vers le ciel. Un intérieur d'une blancheur saisissante, futuriste et apaisant.", "travel": 7, "gid": "3_10", "origDay": 3}, {"name": "9/11 Memorial", "ll": [40.7115776, -74.0133362], "m": "walk", "cat": "monument", "lvl": "core", "dur": 40, "desc": "Les deux grands bassins creusés dans l'empreinte des tours, l'eau qui ruisselle en silence. Un lieu de recueillement bouleversant et apaisant, plein de dignité.", "travel": 2, "gid": "3_11", "origDay": 3}, {"name": "Charging Bull", "ll": [40.7055746, -74.0134499], "m": "walk", "cat": "monument", "lvl": "core", "dur": 15, "desc": "Le taureau de bronze de Wall Street, symbole de la fougue et de l'audace. Le week-end le quartier est calme, parfait pour la photo complice.", "travel": 8, "gid": "3_12", "origDay": 3}, {"name": "Wall Street et NYSE", "ll": [40.7069, -74.0113], "m": "walk", "cat": "monument", "lvl": "bonus", "dur": 20, "desc": "Le cœur historique de la finance mondiale, la Bourse et Federal Hall aux colonnes solennelles. Des ruelles chargées d'histoire au bout de l'île.", "travel": 3, "gid": "3_13", "origDay": 3}, {"name": "Pier 15 East River", "ll": [40.7043756, -74.0029654], "m": "walk", "cat": "park", "lvl": "bonus", "dur": 20, "desc": "Une jetée sur deux niveaux face au pont de Brooklyn, transats et vue dégagée sur l'eau. Une respiration au bord de l'East River.", "travel": 9, "gid": "3_14", "origDay": 3}, {"name": "Staten Island Ferry", "ll": [40.7010853, -74.0131012], "m": "walk", "cat": "transport", "lvl": "core", "dur": 60, "fixed_label": "~17h", "desc": "Le ferry orange, gratuit, qui glisse au plus près de la Statue de la Liberté. On se place à droite à l'aller, le vent dans les cheveux, Lady Liberty qui passe. Magique et sans débourser un dollar.", "travel": 11, "gid": "3_15", "origDay": 3}, {"name": "Passage au nid d'amour", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 45, "travel": 0, "desc": "On repasse vite au nid se rafraîchir et enfiler une jolie tenue avant la soirée. Durée modifiable selon l'envie de prendre son temps.", "gid": "3_16", "origDay": 3}, {"name": "EDGE Hudson Yards", "ll": [40.7533936, -74.001055], "m": "subway", "cat": "view", "lvl": "core", "dur": 75, "fixed_label": "coucher ~20h32", "desc": "Notre deuxième tour, et le coucher le plus tardif de l'année. Une terrasse en plein ciel qui pointe dans le vide, un sol de verre, et le soleil qui plonge derrière l'Hudson. Le grand frisson du soir.", "travel": 19, "fixedTime": "19:30", "gid": "3_17", "origDay": 3}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true, "min": 19}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "dash": false, "min": 14}, {"coords": [[40.7410605, -73.9896986], [40.7201718, -74.0014426]], "dash": false, "min": 31}, {"coords": [[40.7201718, -74.0014426], [40.7224, -73.9954]], "dash": false, "min": 7}, {"coords": [[40.7224, -73.9954], [40.7191, -73.9973]], "dash": false, "min": 5}, {"coords": [[40.7191, -73.9973], [40.7158, -73.997]], "dash": false, "min": 5}, {"coords": [[40.7158, -73.997], [40.7223, -73.9874]], "dash": false, "min": 13}, {"coords": [[40.7223, -73.9874], [40.7163, -74.0086]], "dash": false, "min": 24}, {"coords": [[40.7163, -74.0086], [40.7117, -74.0111]], "dash": false, "min": 7}, {"coords": [[40.7117, -74.0111], [40.7115776, -74.0133362]], "dash": false, "min": 2}, {"coords": [[40.7115776, -74.0133362], [40.7055746, -74.0134499]], "dash": false, "min": 8}, {"coords": [[40.7055746, -74.0134499], [40.7069, -74.0113]], "dash": false, "min": 3}, {"coords": [[40.7069, -74.0113], [40.7043756, -74.0029654]], "dash": false, "min": 9}, {"coords": [[40.7043756, -74.0029654], [40.7010853, -74.0131012]], "dash": false, "min": 11}, {"coords": [[40.7010853, -74.0131012], [40.7533936, -74.001055]], "dash": true, "min": 19}], "_matrix": [[{"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7857, -73.9627]], "min": 19}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7201718, -74.0014426]], "min": 18}, {"coords": [[40.73345, -73.99857], [40.7224, -73.9954]], "min": 16}, {"coords": [[40.73345, -73.99857], [40.7191, -73.9973]], "min": 20}, {"coords": [[40.73345, -73.99857], [40.7158, -73.997]], "min": 24}, {"coords": [[40.73345, -73.99857], [40.7223, -73.9874]], "min": 19}, {"coords": [[40.73345, -73.99857], [40.7163, -74.0086]], "min": 26}, {"coords": [[40.73345, -73.99857], [40.7117, -74.0111]], "min": 33}, {"coords": [[40.73345, -73.99857], [40.7115776, -74.0133362]], "min": 34}, {"coords": [[40.73345, -73.99857], [40.7055746, -74.0134499]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7069, -74.0113]], "min": 39}, {"coords": [[40.73345, -73.99857], [40.7043756, -74.0029654]], "min": 40}, {"coords": [[40.73345, -73.99857], [40.7010853, -74.0131012]], "min": 47}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7533936, -74.001055]], "min": 12}], [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "min": 81}, {"coords": [[40.7857, -73.9627]], "min": 0}, {"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "min": 19}, {"coords": [[40.7857, -73.9627], [40.7410605, -73.9896986]], "min": 67}, {"coords": [[40.7857, -73.9627], [40.7201718, -74.0014426]], "min": 99}, {"coords": [[40.7857, -73.9627], [40.7224, -73.9954]], "min": 93}, {"coords": [[40.7857, -73.9627], [40.7191, -73.9973]], "min": 98}, {"coords": [[40.7857, -73.9627], [40.7158, -73.997]], "min": 102}, {"coords": [[40.7857, -73.9627], [40.7223, -73.9874]], "min": 91}, {"coords": [[40.7857, -73.9627], [40.7163, -74.0086]], "min": 107}, {"coords": [[40.7857, -73.9627], [40.7117, -74.0111]], "min": 113}, {"coords": [[40.7857, -73.9627], [40.7115776, -74.0133362]], "min": 115}, {"coords": [[40.7857, -73.9627], [40.7055746, -74.0134499]], "min": 122}, {"coords": [[40.7857, -73.9627], [40.7069, -74.0113]], "min": 119}, {"coords": [[40.7857, -73.9627], [40.7043756, -74.0029654]], "min": 119}, {"coords": [[40.7857, -73.9627], [40.7010853, -74.0131012]], "min": 127}, {"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "min": 19}, {"coords": [[40.7857, -73.9627], [40.7533936, -74.001055]], "min": 17}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7857, -73.9627]], "min": 19}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7201718, -74.0014426]], "min": 18}, {"coords": [[40.73345, -73.99857], [40.7224, -73.9954]], "min": 16}, {"coords": [[40.73345, -73.99857], [40.7191, -73.9973]], "min": 20}, {"coords": [[40.73345, -73.99857], [40.7158, -73.997]], "min": 24}, {"coords": [[40.73345, -73.99857], [40.7223, -73.9874]], "min": 19}, {"coords": [[40.73345, -73.99857], [40.7163, -74.0086]], "min": 26}, {"coords": [[40.73345, -73.99857], [40.7117, -74.0111]], "min": 33}, {"coords": [[40.73345, -73.99857], [40.7115776, -74.0133362]], "min": 34}, {"coords": [[40.73345, -73.99857], [40.7055746, -74.0134499]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7069, -74.0113]], "min": 39}, {"coords": [[40.73345, -73.99857], [40.7043756, -74.0029654]], "min": 40}, {"coords": [[40.73345, -73.99857], [40.7010853, -74.0131012]], "min": 47}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7533936, -74.001055]], "min": 12}], [{"coords": [[40.7410605, -73.9896986], [40.73345, -73.99857]], "min": 14}, {"coords": [[40.7410605, -73.9896986], [40.7857, -73.9627]], "min": 16}, {"coords": [[40.7410605, -73.9896986], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7410605, -73.9896986]], "min": 0}, {"coords": [[40.7410605, -73.9896986], [40.7201718, -74.0014426]], "min": 31}, {"coords": [[40.7410605, -73.9896986], [40.7224, -73.9954]], "min": 26}, {"coords": [[40.7410605, -73.9896986], [40.7191, -73.9973]], "min": 31}, {"coords": [[40.7410605, -73.9896986], [40.7158, -73.997]], "min": 35}, {"coords": [[40.7410605, -73.9896986], [40.7223, -73.9874]], "min": 26}, {"coords": [[40.7410605, -73.9896986], [40.7163, -74.0086]], "min": 39}, {"coords": [[40.7410605, -73.9896986], [40.7117, -74.0111]], "min": 46}, {"coords": [[40.7410605, -73.9896986], [40.7115776, -74.0133362]], "min": 47}, {"coords": [[40.7410605, -73.9896986], [40.7055746, -74.0134499]], "min": 55}, {"coords": [[40.7410605, -73.9896986], [40.7069, -74.0113]], "min": 52}, {"coords": [[40.7410605, -73.9896986], [40.7043756, -74.0029654]], "min": 52}, {"coords": [[40.7410605, -73.9896986], [40.7010853, -74.0131012]], "min": 60}, {"coords": [[40.7410605, -73.9896986], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7410605, -73.9896986], [40.7533936, -74.001055]], "min": 11}], [{"coords": [[40.7201718, -74.0014426], [40.73345, -73.99857]], "min": 18}, {"coords": [[40.7201718, -74.0014426], [40.7857, -73.9627]], "min": 22}, {"coords": [[40.7201718, -74.0014426], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7201718, -74.0014426], [40.7410605, -73.9896986]], "min": 31}, {"coords": [[40.7201718, -74.0014426]], "min": 0}, {"coords": [[40.7201718, -74.0014426], [40.7224, -73.9954]], "min": 7}, {"coords": [[40.7201718, -74.0014426], [40.7191, -73.9973]], "min": 5}, {"coords": [[40.7201718, -74.0014426], [40.7158, -73.997]], "min": 8}, {"coords": [[40.7201718, -74.0014426], [40.7223, -73.9874]], "min": 15}, {"coords": [[40.7201718, -74.0014426], [40.7163, -74.0086]], "min": 9}, {"coords": [[40.7201718, -74.0014426], [40.7117, -74.0111]], "min": 15}, {"coords": [[40.7201718, -74.0014426], [40.7115776, -74.0133362]], "min": 17}, {"coords": [[40.7201718, -74.0014426], [40.7055746, -74.0134499]], "min": 24}, {"coords": [[40.7201718, -74.0014426], [40.7069, -74.0113]], "min": 21}, {"coords": [[40.7201718, -74.0014426], [40.7043756, -74.0029654]], "min": 22}, {"coords": [[40.7201718, -74.0014426], [40.7010853, -74.0131012]], "min": 29}, {"coords": [[40.7201718, -74.0014426], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7201718, -74.0014426], [40.7533936, -74.001055]], "min": 15}], [{"coords": [[40.7224, -73.9954], [40.73345, -73.99857]], "min": 16}, {"coords": [[40.7224, -73.9954], [40.7857, -73.9627]], "min": 21}, {"coords": [[40.7224, -73.9954], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7224, -73.9954], [40.7410605, -73.9896986]], "min": 26}, {"coords": [[40.7224, -73.9954], [40.7201718, -74.0014426]], "min": 7}, {"coords": [[40.7224, -73.9954]], "min": 0}, {"coords": [[40.7224, -73.9954], [40.7191, -73.9973]], "min": 5}, {"coords": [[40.7224, -73.9954], [40.7158, -73.997]], "min": 9}, {"coords": [[40.7224, -73.9954], [40.7223, -73.9874]], "min": 8}, {"coords": [[40.7224, -73.9954], [40.7163, -74.0086]], "min": 16}, {"coords": [[40.7224, -73.9954], [40.7117, -74.0111]], "min": 22}, {"coords": [[40.7224, -73.9954], [40.7115776, -74.0133362]], "min": 24}, {"coords": [[40.7224, -73.9954], [40.7055746, -74.0134499]], "min": 30}, {"coords": [[40.7224, -73.9954], [40.7069, -74.0113]], "min": 27}, {"coords": [[40.7224, -73.9954], [40.7043756, -74.0029654]], "min": 26}, {"coords": [[40.7224, -73.9954], [40.7010853, -74.0131012]], "min": 35}, {"coords": [[40.7224, -73.9954], [40.73345, -73.99857]], "min": 6}, {"coords": [[40.7224, -73.9954], [40.7533936, -74.001055]], "min": 15}], [{"coords": [[40.7191, -73.9973], [40.73345, -73.99857]], "min": 20}, {"coords": [[40.7191, -73.9973], [40.7857, -73.9627]], "min": 22}, {"coords": [[40.7191, -73.9973], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7191, -73.9973], [40.7410605, -73.9896986]], "min": 31}, {"coords": [[40.7191, -73.9973], [40.7201718, -74.0014426]], "min": 5}, {"coords": [[40.7191, -73.9973], [40.7224, -73.9954]], "min": 5}, {"coords": [[40.7191, -73.9973]], "min": 0}, {"coords": [[40.7191, -73.9973], [40.7158, -73.997]], "min": 5}, {"coords": [[40.7191, -73.9973], [40.7223, -73.9874]], "min": 11}, {"coords": [[40.7191, -73.9973], [40.7163, -74.0086]], "min": 12}, {"coords": [[40.7191, -73.9973], [40.7117, -74.0111]], "min": 18}, {"coords": [[40.7191, -73.9973], [40.7115776, -74.0133362]], "min": 20}, {"coords": [[40.7191, -73.9973], [40.7055746, -74.0134499]], "min": 25}, {"coords": [[40.7191, -73.9973], [40.7069, -74.0113]], "min": 22}, {"coords": [[40.7191, -73.9973], [40.7043756, -74.0029654]], "min": 21}, {"coords": [[40.7191, -73.9973], [40.7010853, -74.0131012]], "min": 30}, {"coords": [[40.7191, -73.9973], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7191, -73.9973], [40.7533936, -74.001055]], "min": 15}], [{"coords": [[40.7158, -73.997], [40.73345, -73.99857]], "min": 24}, {"coords": [[40.7158, -73.997], [40.7857, -73.9627]], "min": 23}, {"coords": [[40.7158, -73.997], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7158, -73.997], [40.7410605, -73.9896986]], "min": 35}, {"coords": [[40.7158, -73.997], [40.7201718, -74.0014426]], "min": 8}, {"coords": [[40.7158, -73.997], [40.7224, -73.9954]], "min": 9}, {"coords": [[40.7158, -73.997], [40.7191, -73.9973]], "min": 5}, {"coords": [[40.7158, -73.997]], "min": 0}, {"coords": [[40.7158, -73.997], [40.7223, -73.9874]], "min": 13}, {"coords": [[40.7158, -73.997], [40.7163, -74.0086]], "min": 12}, {"coords": [[40.7158, -73.997], [40.7117, -74.0111]], "min": 16}, {"coords": [[40.7158, -73.997], [40.7115776, -74.0133362]], "min": 18}, {"coords": [[40.7158, -73.997], [40.7055746, -74.0134499]], "min": 22}, {"coords": [[40.7158, -73.997], [40.7069, -74.0113]], "min": 19}, {"coords": [[40.7158, -73.997], [40.7043756, -74.0029654]], "min": 17}, {"coords": [[40.7158, -73.997], [40.7010853, -74.0131012]], "min": 26}, {"coords": [[40.7158, -73.997], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7158, -73.997], [40.7533936, -74.001055]], "min": 16}], [{"coords": [[40.7223, -73.9874], [40.73345, -73.99857]], "min": 19}, {"coords": [[40.7223, -73.9874], [40.7857, -73.9627]], "min": 21}, {"coords": [[40.7223, -73.9874], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7223, -73.9874], [40.7410605, -73.9896986]], "min": 26}, {"coords": [[40.7223, -73.9874], [40.7201718, -74.0014426]], "min": 15}, {"coords": [[40.7223, -73.9874], [40.7224, -73.9954]], "min": 8}, {"coords": [[40.7223, -73.9874], [40.7191, -73.9973]], "min": 11}, {"coords": [[40.7223, -73.9874], [40.7158, -73.997]], "min": 13}, {"coords": [[40.7223, -73.9874]], "min": 0}, {"coords": [[40.7223, -73.9874], [40.7163, -74.0086]], "min": 24}, {"coords": [[40.7223, -73.9874], [40.7117, -74.0111]], "min": 29}, {"coords": [[40.7223, -73.9874], [40.7115776, -74.0133362]], "min": 31}, {"coords": [[40.7223, -73.9874], [40.7055746, -74.0134499]], "min": 36}, {"coords": [[40.7223, -73.9874], [40.7069, -74.0113]], "min": 33}, {"coords": [[40.7223, -73.9874], [40.7043756, -74.0029654]], "min": 29}, {"coords": [[40.7223, -73.9874], [40.7010853, -74.0131012]], "min": 40}, {"coords": [[40.7223, -73.9874], [40.73345, -73.99857]], "min": 7}, {"coords": [[40.7223, -73.9874], [40.7533936, -74.001055]], "min": 15}], [{"coords": [[40.7163, -74.0086], [40.73345, -73.99857]], "min": 26}, {"coords": [[40.7163, -74.0086], [40.7857, -73.9627]], "min": 24}, {"coords": [[40.7163, -74.0086], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7163, -74.0086], [40.7410605, -73.9896986]], "min": 39}, {"coords": [[40.7163, -74.0086], [40.7201718, -74.0014426]], "min": 9}, {"coords": [[40.7163, -74.0086], [40.7224, -73.9954]], "min": 16}, {"coords": [[40.7163, -74.0086], [40.7191, -73.9973]], "min": 12}, {"coords": [[40.7163, -74.0086], [40.7158, -73.997]], "min": 12}, {"coords": [[40.7163, -74.0086], [40.7223, -73.9874]], "min": 24}, {"coords": [[40.7163, -74.0086]], "min": 0}, {"coords": [[40.7163, -74.0086], [40.7117, -74.0111]], "min": 7}, {"coords": [[40.7163, -74.0086], [40.7115776, -74.0133362]], "min": 8}, {"coords": [[40.7163, -74.0086], [40.7055746, -74.0134499]], "min": 16}, {"coords": [[40.7163, -74.0086], [40.7069, -74.0113]], "min": 13}, {"coords": [[40.7163, -74.0086], [40.7043756, -74.0029654]], "min": 17}, {"coords": [[40.7163, -74.0086], [40.7010853, -74.0131012]], "min": 21}, {"coords": [[40.7163, -74.0086], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7163, -74.0086], [40.7533936, -74.001055]], "min": 16}], [{"coords": [[40.7117, -74.0111], [40.73345, -73.99857]], "min": 33}, {"coords": [[40.7117, -74.0111], [40.7857, -73.9627]], "min": 25}, {"coords": [[40.7117, -74.0111], [40.73345, -73.99857]], "min": 9}, {"coords": [[40.7117, -74.0111], [40.7410605, -73.9896986]], "min": 46}, {"coords": [[40.7117, -74.0111], [40.7201718, -74.0014426]], "min": 15}, {"coords": [[40.7117, -74.0111], [40.7224, -73.9954]], "min": 22}, {"coords": [[40.7117, -74.0111], [40.7191, -73.9973]], "min": 18}, {"coords": [[40.7117, -74.0111], [40.7158, -73.997]], "min": 16}, {"coords": [[40.7117, -74.0111], [40.7223, -73.9874]], "min": 29}, {"coords": [[40.7117, -74.0111], [40.7163, -74.0086]], "min": 7}, {"coords": [[40.7117, -74.0111]], "min": 0}, {"coords": [[40.7117, -74.0111], [40.7115776, -74.0133362]], "min": 2}, {"coords": [[40.7117, -74.0111], [40.7055746, -74.0134499]], "min": 9}, {"coords": [[40.7117, -74.0111], [40.7069, -74.0113]], "min": 7}, {"coords": [[40.7117, -74.0111], [40.7043756, -74.0029654]], "min": 13}, {"coords": [[40.7117, -74.0111], [40.7010853, -74.0131012]], "min": 15}, {"coords": [[40.7117, -74.0111], [40.73345, -73.99857]], "min": 9}, {"coords": [[40.7117, -74.0111], [40.7533936, -74.001055]], "min": 17}], [{"coords": [[40.7115776, -74.0133362], [40.73345, -73.99857]], "min": 34}, {"coords": [[40.7115776, -74.0133362], [40.7857, -73.9627]], "min": 25}, {"coords": [[40.7115776, -74.0133362], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7115776, -74.0133362], [40.7410605, -73.9896986]], "min": 47}, {"coords": [[40.7115776, -74.0133362], [40.7201718, -74.0014426]], "min": 17}, {"coords": [[40.7115776, -74.0133362], [40.7224, -73.9954]], "min": 24}, {"coords": [[40.7115776, -74.0133362], [40.7191, -73.9973]], "min": 20}, {"coords": [[40.7115776, -74.0133362], [40.7158, -73.997]], "min": 18}, {"coords": [[40.7115776, -74.0133362], [40.7223, -73.9874]], "min": 31}, {"coords": [[40.7115776, -74.0133362], [40.7163, -74.0086]], "min": 8}, {"coords": [[40.7115776, -74.0133362], [40.7117, -74.0111]], "min": 2}, {"coords": [[40.7115776, -74.0133362]], "min": 0}, {"coords": [[40.7115776, -74.0133362], [40.7055746, -74.0134499]], "min": 8}, {"coords": [[40.7115776, -74.0133362], [40.7069, -74.0113]], "min": 7}, {"coords": [[40.7115776, -74.0133362], [40.7043756, -74.0029654]], "min": 15}, {"coords": [[40.7115776, -74.0133362], [40.7010853, -74.0131012]], "min": 14}, {"coords": [[40.7115776, -74.0133362], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7115776, -74.0133362], [40.7533936, -74.001055]], "min": 17}], [{"coords": [[40.7055746, -74.0134499], [40.73345, -73.99857]], "min": 41}, {"coords": [[40.7055746, -74.0134499], [40.7857, -73.9627]], "min": 27}, {"coords": [[40.7055746, -74.0134499], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7055746, -74.0134499], [40.7410605, -73.9896986]], "min": 55}, {"coords": [[40.7055746, -74.0134499], [40.7201718, -74.0014426]], "min": 24}, {"coords": [[40.7055746, -74.0134499], [40.7224, -73.9954]], "min": 30}, {"coords": [[40.7055746, -74.0134499], [40.7191, -73.9973]], "min": 25}, {"coords": [[40.7055746, -74.0134499], [40.7158, -73.997]], "min": 22}, {"coords": [[40.7055746, -74.0134499], [40.7223, -73.9874]], "min": 36}, {"coords": [[40.7055746, -74.0134499], [40.7163, -74.0086]], "min": 16}, {"coords": [[40.7055746, -74.0134499], [40.7117, -74.0111]], "min": 9}, {"coords": [[40.7055746, -74.0134499], [40.7115776, -74.0133362]], "min": 8}, {"coords": [[40.7055746, -74.0134499]], "min": 0}, {"coords": [[40.7055746, -74.0134499], [40.7069, -74.0113]], "min": 3}, {"coords": [[40.7055746, -74.0134499], [40.7043756, -74.0029654]], "min": 11}, {"coords": [[40.7055746, -74.0134499], [40.7010853, -74.0131012]], "min": 6}, {"coords": [[40.7055746, -74.0134499], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7055746, -74.0134499], [40.7533936, -74.001055]], "min": 18}], [{"coords": [[40.7069, -74.0113], [40.73345, -73.99857]], "min": 39}, {"coords": [[40.7069, -74.0113], [40.7857, -73.9627]], "min": 26}, {"coords": [[40.7069, -74.0113], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7069, -74.0113], [40.7410605, -73.9896986]], "min": 52}, {"coords": [[40.7069, -74.0113], [40.7201718, -74.0014426]], "min": 21}, {"coords": [[40.7069, -74.0113], [40.7224, -73.9954]], "min": 27}, {"coords": [[40.7069, -74.0113], [40.7191, -73.9973]], "min": 22}, {"coords": [[40.7069, -74.0113], [40.7158, -73.997]], "min": 19}, {"coords": [[40.7069, -74.0113], [40.7223, -73.9874]], "min": 33}, {"coords": [[40.7069, -74.0113], [40.7163, -74.0086]], "min": 13}, {"coords": [[40.7069, -74.0113], [40.7117, -74.0111]], "min": 7}, {"coords": [[40.7069, -74.0113], [40.7115776, -74.0133362]], "min": 7}, {"coords": [[40.7069, -74.0113], [40.7055746, -74.0134499]], "min": 3}, {"coords": [[40.7069, -74.0113]], "min": 0}, {"coords": [[40.7069, -74.0113], [40.7043756, -74.0029654]], "min": 9}, {"coords": [[40.7069, -74.0113], [40.7010853, -74.0131012]], "min": 8}, {"coords": [[40.7069, -74.0113], [40.73345, -73.99857]], "min": 10}, {"coords": [[40.7069, -74.0113], [40.7533936, -74.001055]], "min": 18}], [{"coords": [[40.7043756, -74.0029654], [40.73345, -73.99857]], "min": 40}, {"coords": [[40.7043756, -74.0029654], [40.7857, -73.9627]], "min": 26}, {"coords": [[40.7043756, -74.0029654], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7043756, -74.0029654], [40.7410605, -73.9896986]], "min": 52}, {"coords": [[40.7043756, -74.0029654], [40.7201718, -74.0014426]], "min": 22}, {"coords": [[40.7043756, -74.0029654], [40.7224, -73.9954]], "min": 26}, {"coords": [[40.7043756, -74.0029654], [40.7191, -73.9973]], "min": 21}, {"coords": [[40.7043756, -74.0029654], [40.7158, -73.997]], "min": 17}, {"coords": [[40.7043756, -74.0029654], [40.7223, -73.9874]], "min": 29}, {"coords": [[40.7043756, -74.0029654], [40.7163, -74.0086]], "min": 17}, {"coords": [[40.7043756, -74.0029654], [40.7117, -74.0111]], "min": 13}, {"coords": [[40.7043756, -74.0029654], [40.7115776, -74.0133362]], "min": 15}, {"coords": [[40.7043756, -74.0029654], [40.7055746, -74.0134499]], "min": 11}, {"coords": [[40.7043756, -74.0029654], [40.7069, -74.0113]], "min": 9}, {"coords": [[40.7043756, -74.0029654]], "min": 0}, {"coords": [[40.7043756, -74.0029654], [40.7010853, -74.0131012]], "min": 11}, {"coords": [[40.7043756, -74.0029654], [40.73345, -73.99857]], "min": 11}, {"coords": [[40.7043756, -74.0029654], [40.7533936, -74.001055]], "min": 18}], [{"coords": [[40.7010853, -74.0131012], [40.73345, -73.99857]], "min": 47}, {"coords": [[40.7010853, -74.0131012], [40.7857, -73.9627]], "min": 28}, {"coords": [[40.7010853, -74.0131012], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.7010853, -74.0131012], [40.7410605, -73.9896986]], "min": 60}, {"coords": [[40.7010853, -74.0131012], [40.7201718, -74.0014426]], "min": 29}, {"coords": [[40.7010853, -74.0131012], [40.7224, -73.9954]], "min": 35}, {"coords": [[40.7010853, -74.0131012], [40.7191, -73.9973]], "min": 30}, {"coords": [[40.7010853, -74.0131012], [40.7158, -73.997]], "min": 26}, {"coords": [[40.7010853, -74.0131012], [40.7223, -73.9874]], "min": 40}, {"coords": [[40.7010853, -74.0131012], [40.7163, -74.0086]], "min": 21}, {"coords": [[40.7010853, -74.0131012], [40.7117, -74.0111]], "min": 15}, {"coords": [[40.7010853, -74.0131012], [40.7115776, -74.0133362]], "min": 14}, {"coords": [[40.7010853, -74.0131012], [40.7055746, -74.0134499]], "min": 6}, {"coords": [[40.7010853, -74.0131012], [40.7069, -74.0113]], "min": 8}, {"coords": [[40.7010853, -74.0131012], [40.7043756, -74.0029654]], "min": 11}, {"coords": [[40.7010853, -74.0131012]], "min": 0}, {"coords": [[40.7010853, -74.0131012], [40.73345, -73.99857]], "min": 12}, {"coords": [[40.7010853, -74.0131012], [40.7533936, -74.001055]], "min": 19}], [{"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7857, -73.9627]], "min": 19}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "min": 3}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "min": 14}, {"coords": [[40.73345, -73.99857], [40.7201718, -74.0014426]], "min": 18}, {"coords": [[40.73345, -73.99857], [40.7224, -73.9954]], "min": 16}, {"coords": [[40.73345, -73.99857], [40.7191, -73.9973]], "min": 20}, {"coords": [[40.73345, -73.99857], [40.7158, -73.997]], "min": 24}, {"coords": [[40.73345, -73.99857], [40.7223, -73.9874]], "min": 19}, {"coords": [[40.73345, -73.99857], [40.7163, -74.0086]], "min": 26}, {"coords": [[40.73345, -73.99857], [40.7117, -74.0111]], "min": 33}, {"coords": [[40.73345, -73.99857], [40.7115776, -74.0133362]], "min": 34}, {"coords": [[40.73345, -73.99857], [40.7055746, -74.0134499]], "min": 41}, {"coords": [[40.73345, -73.99857], [40.7069, -74.0113]], "min": 39}, {"coords": [[40.73345, -73.99857], [40.7043756, -74.0029654]], "min": 40}, {"coords": [[40.73345, -73.99857], [40.7010853, -74.0131012]], "min": 47}, {"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.7533936, -74.001055]], "min": 12}], [{"coords": [[40.7533936, -74.001055], [40.73345, -73.99857]], "min": 27}, {"coords": [[40.7533936, -74.001055], [40.7857, -73.9627]], "min": 15}, {"coords": [[40.7533936, -74.001055], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7533936, -74.001055], [40.7410605, -73.9896986]], "min": 21}, {"coords": [[40.7533936, -74.001055], [40.7201718, -74.0014426]], "min": 46}, {"coords": [[40.7533936, -74.001055], [40.7224, -73.9954]], "min": 43}, {"coords": [[40.7533936, -74.001055], [40.7191, -73.9973]], "min": 47}, {"coords": [[40.7533936, -74.001055], [40.7158, -73.997]], "min": 52}, {"coords": [[40.7533936, -74.001055], [40.7223, -73.9874]], "min": 45}, {"coords": [[40.7533936, -74.001055], [40.7163, -74.0086]], "min": 52}, {"coords": [[40.7533936, -74.001055], [40.7117, -74.0111]], "min": 58}, {"coords": [[40.7533936, -74.001055], [40.7115776, -74.0133362]], "min": 59}, {"coords": [[40.7533936, -74.001055], [40.7055746, -74.0134499]], "min": 67}, {"coords": [[40.7533936, -74.001055], [40.7069, -74.0113]], "min": 65}, {"coords": [[40.7533936, -74.001055], [40.7043756, -74.0029654]], "min": 67}, {"coords": [[40.7533936, -74.001055], [40.7010853, -74.0131012]], "min": 73}, {"coords": [[40.7533936, -74.001055], [40.73345, -73.99857]], "min": 8}, {"coords": [[40.7533936, -74.001055]], "min": 0}]]}, {"name": "Dimanche 28 juin", "sub": "Gospel à Harlem, soul food entre les locaux, puis l'avion", "color": "#911eb4", "stops": [{"name": "Washington Square Hotel, check-out", "ll": [40.73345, -73.99857], "m": "taxi", "cat": "hotel", "lvl": "core", "dur": 20, "desc": "On boucle les valises, un dernier regard sur le Village, et cap au nord vers Harlem. Vol à 16h30, on ne reviendra pas, tout est sur nous.", "travel": 0, "hotel_real": true, "gid": "4_0", "origDay": 4}, {"name": "Consigne à bagages (125th St)", "ll": [40.809, -73.949], "m": "taxi", "cat": "transport", "lvl": "core", "dur": 15, "desc": "On dépose les valises dans une consigne près de la 125e Rue (à réserver en ligne, quelques dollars). Léger comme l'air, prêt à vivre le matin pleinement.", "travel": 25, "gid": "4_1", "origDay": 4}, {"name": "Gospel à Harlem", "ll": [40.8166821, -73.9415561], "m": "walk", "cat": "church", "lvl": "core", "dur": 150, "fixed_label": "office 11h", "desc": "L'expérience la plus rare et la plus émouvante du voyage : un vrai office gospel, chœurs vibrants, mains levées, ferveur joyeuse. À l'Abyssinian (file dès 9h45) ou la First Corinthian. Tenue soignée : pas de short ni de sac à dos.", "travel": 13, "fixedTime": "11:00", "gid": "4_2", "origDay": 4}, {"name": "Soul food (Sylvia's / Red Rooster)", "ll": [40.8086445, -73.944479], "m": "walk", "cat": "food", "lvl": "core", "dur": 75, "desc": "Le rendez-vous des Harlémites le dimanche midi, après l'office. Poulet frit croustillant, cornbread doré, gaufres et sirop. Une table chaleureuse, généreuse, pleine de vie.", "travel": 11, "gid": "4_3", "origDay": 4}, {"name": "Récup bagages et taxi JFK", "ll": [40.809, -73.949], "m": "walk", "cat": "transport", "lvl": "core", "dur": 10, "fixed_label": "vers 14h30", "desc": "On reprend les valises et on file en taxi vers JFK, environ cinquante minutes. Le cœur plein de New York, déjà l'envie de revenir.", "travel": 5, "gid": "4_4", "origDay": 4}], "_segs": [{"coords": [[40.73345, -73.99857], [40.809, -73.949]], "dash": true, "min": 25}, {"coords": [[40.809, -73.949], [40.8166821, -73.9415561]], "dash": false, "min": 13}, {"coords": [[40.8166821, -73.9415561], [40.8086445, -73.944479]], "dash": false, "min": 11}, {"coords": [[40.8086445, -73.944479], [40.809, -73.949]], "dash": false, "min": 5}], "_matrix": [[{"coords": [[40.73345, -73.99857]], "min": 0}, {"coords": [[40.73345, -73.99857], [40.809, -73.949]], "min": 25}, {"coords": [[40.73345, -73.99857], [40.8166821, -73.9415561]], "min": 129}, {"coords": [[40.73345, -73.99857], [40.8086445, -73.944479]], "min": 118}, {"coords": [[40.73345, -73.99857], [40.809, -73.949]], "min": 116}], [{"coords": [[40.809, -73.949], [40.73345, -73.99857]], "min": 25}, {"coords": [[40.809, -73.949]], "min": 0}, {"coords": [[40.809, -73.949], [40.8166821, -73.9415561]], "min": 13}, {"coords": [[40.809, -73.949], [40.8086445, -73.944479]], "min": 5}, {"coords": [[40.809, -73.949], [40.809, -73.949]], "min": 0}], [{"coords": [[40.8166821, -73.9415561], [40.73345, -73.99857]], "min": 28}, {"coords": [[40.8166821, -73.9415561], [40.809, -73.949]], "min": 6}, {"coords": [[40.8166821, -73.9415561]], "min": 0}, {"coords": [[40.8166821, -73.9415561], [40.8086445, -73.944479]], "min": 11}, {"coords": [[40.8166821, -73.9415561], [40.809, -73.949]], "min": 13}], [{"coords": [[40.8086445, -73.944479], [40.73345, -73.99857]], "min": 26}, {"coords": [[40.8086445, -73.944479], [40.809, -73.949]], "min": 4}, {"coords": [[40.8086445, -73.944479], [40.8166821, -73.9415561]], "min": 11}, {"coords": [[40.8086445, -73.944479]], "min": 0}, {"coords": [[40.8086445, -73.944479], [40.809, -73.949]], "min": 5}], [{"coords": [[40.809, -73.949], [40.73345, -73.99857]], "min": 25}, {"coords": [[40.809, -73.949], [40.809, -73.949]], "min": 3}, {"coords": [[40.809, -73.949], [40.8166821, -73.9415561]], "min": 13}, {"coords": [[40.809, -73.949], [40.8086445, -73.944479]], "min": 5}, {"coords": [[40.809, -73.949]], "min": 0}]]}, {"name": "Méga bonus", "sub": "Tout ce qu'on garde sous le coude, à piocher si un créneau se libère", "color": "#42d4f4", "stops": [{"name": "Roosevelt Island", "ll": [40.761, -73.951], "m": "subway", "cat": "view", "lvl": "bonus", "dur": 60, "desc": "Un téléphérique rouge qui survole l'East River, vue insolite et aérienne sur Manhattan. Une petite île paisible, surprise méconnue des voyageurs.", "travel": 0, "gid": "5_0", "origDay": 5}, {"name": "Long Island City (Queens)", "ll": [40.747, -73.954], "m": "subway", "cat": "neighborhood", "lvl": "bonus", "dur": 60, "desc": "Gantry Plaza et sa vue frontale, la plus belle, sur les gratte-ciels de Midtown au-dessus de l'eau. Idéal au coucher du soleil, loin de la foule.", "travel": 11, "gid": "5_1", "origDay": 5}, {"name": "Flushing (Queens)", "ll": [40.7596, -73.83], "m": "subway", "cat": "neighborhood", "lvl": "bonus2", "dur": 90, "desc": "Le vrai Chinatown de New York, le plus authentique et le plus savoureux. Un festival de saveurs asiatiques, dépaysement total garanti.", "travel": 28, "gid": "5_2", "origDay": 5}, {"name": "Yankee Stadium (Bronx)", "ll": [40.8296, -73.9262], "m": "subway", "cat": "show", "lvl": "bonus2", "dur": 180, "desc": "Le stade de baseball le plus mythique d'Amérique. Une soirée match, hot-dogs et ferveur populaire, une immersion dans la culture US.", "travel": 29, "gid": "5_3", "origDay": 5}, {"name": "Coney Island (Brooklyn)", "ll": [40.5749, -73.9857], "m": "subway", "cat": "park", "lvl": "bonus2", "dur": 150, "desc": "La plage, la grande roue rétro, la promenade en planches et les hot-dogs de Nathan's. Une bouffée d'air marin et de nostalgie joyeuse, à une heure de métro.", "travel": 63, "gid": "5_4", "origDay": 5}, {"name": "Top of the Rock", "ll": [40.7593495, -73.9794087], "m": "subway", "cat": "view", "lvl": "bonus", "dur": 75, "desc": "La terrasse du Rockefeller, sans doute la plus belle vue de jour : Central Park déroulé d'un côté, l'Empire State pile en face. Un panorama qui se grave dans la mémoire.", "gid": "5_5", "origDay": 5}, {"name": "Empire State Building", "ll": [40.7484405, -73.9856644], "m": "subway", "cat": "view", "lvl": "bonus", "dur": 60, "desc": "L'icône absolue, magique de nuit comme de jour. La ville scintille à 360°, le vent frais, les lumières à l'infini.", "gid": "5_6", "origDay": 5}, {"name": "Whitney Museum", "ll": [40.7396251, -74.0088346], "m": "subway", "cat": "museum", "lvl": "bonus", "dur": 90, "desc": "L'art américain dans toute sa lumière : Hopper, O'Keeffe, Pollock, et des terrasses qui surplombent l'Hudson.", "gid": "5_7", "origDay": 5}, {"name": "Vessel et Hudson Yards", "ll": [40.7538, -74.0019], "m": "subway", "cat": "monument", "lvl": "bonus", "dur": 25, "desc": "La structure en nid d'abeille cuivré, sculpture géante d'escaliers, et la plaza ultramoderne tout autour.", "gid": "5_8", "origDay": 5}, {"name": "Katz's Delicatessen", "ll": [40.7223, -73.9874], "m": "subway", "cat": "food", "lvl": "bonus", "dur": 45, "desc": "Le deli mythique du Lower East Side et son légendaire pastrami fondant. Une institution pleine de caractère.", "gid": "5_9", "origDay": 5}, {"name": "Williamsburg, Bedford Ave", "ll": [40.717, -73.9569], "m": "subway", "cat": "neighborhood", "lvl": "bonus", "dur": 60, "desc": "Le Brooklyn branché et créatif : friperies, disquaires, cafés de spécialité, fresques murales géantes.", "gid": "5_10", "origDay": 5}, {"name": "The Met (Metropolitan Museum)", "ll": [40.7794368, -73.9631613], "m": "subway", "cat": "museum", "lvl": "bonus", "dur": 150, "desc": "L'un des plus grands musées du monde, en bordure de Central Park. De l'Égypte ancienne aux impressionnistes, de quoi s'émerveiller des heures.", "gid": "5_11", "origDay": 5}, {"name": "Central Park (flânerie)", "ll": [40.7782, -73.9656], "m": "subway", "cat": "park", "lvl": "bonus", "dur": 90, "desc": "Le grand poumon vert : Bethesda Terrace, le lac et ses barques, Bow Bridge, Strawberry Fields. Une promenade romantique sans fin.", "gid": "5_12", "origDay": 5}, {"name": "One World Observatory", "ll": [40.7127, -74.0134], "m": "subway", "cat": "view", "lvl": "bonus2", "dur": 75, "desc": "Le sommet de la tour la plus haute de l'hémisphère ouest, vue plongeante sur tout Manhattan et la baie.", "gid": "5_13", "origDay": 5}, {"name": "High Line (section nord)", "ll": [40.748, -74.0048], "m": "subway", "cat": "park", "lvl": "bonus2", "dur": 40, "desc": "La partie haute du jardin suspendu, plus sauvage, jusqu'aux Hudson Yards. Si on a aimé la promenade, on prolonge.", "gid": "5_14", "origDay": 5}], "_segs": [{"coords": [[40.761, -73.951], [40.747, -73.954]], "dash": true, "min": 11}, {"coords": [[40.747, -73.954], [40.7596, -73.83]], "dash": true, "min": 28}, {"coords": [[40.7596, -73.83], [40.8296, -73.9262]], "dash": true, "min": 29}, {"coords": [[40.8296, -73.9262], [40.5749, -73.9857]], "dash": true, "min": 63}], "_matrix": [[{"coords": [[40.761, -73.951]], "min": 0}, {"coords": [[40.761, -73.951], [40.747, -73.954]], "min": 11}, {"coords": [[40.761, -73.951], [40.7596, -73.83]], "min": 27}, {"coords": [[40.761, -73.951], [40.8296, -73.9262]], "min": 23}, {"coords": [[40.761, -73.951], [40.5749, -73.9857]], "min": 48}, {"coords": [[40.761, -73.951], [40.7593495, -73.9794087]], "min": 13}, {"coords": [[40.761, -73.951], [40.7484405, -73.9856644]], "min": 14}, {"coords": [[40.761, -73.951], [40.7396251, -74.0088346]], "min": 18}, {"coords": [[40.761, -73.951], [40.7538, -74.0019]], "min": 16}, {"coords": [[40.761, -73.951], [40.7223, -73.9874]], "min": 18}, {"coords": [[40.761, -73.951], [40.717, -73.9569]], "min": 17}, {"coords": [[40.761, -73.951], [40.7794368, -73.9631613]], "min": 12}, {"coords": [[40.761, -73.951], [40.7782, -73.9656]], "min": 12}, {"coords": [[40.761, -73.951], [40.7127, -74.0134]], "min": 22}, {"coords": [[40.761, -73.951], [40.748, -74.0048]], "min": 17}], [{"coords": [[40.747, -73.954], [40.761, -73.951]], "min": 11}, {"coords": [[40.747, -73.954]], "min": 0}, {"coords": [[40.747, -73.954], [40.7596, -73.83]], "min": 28}, {"coords": [[40.747, -73.954], [40.8296, -73.9262]], "min": 26}, {"coords": [[40.747, -73.954], [40.5749, -73.9857]], "min": 45}, {"coords": [[40.747, -73.954], [40.7593495, -73.9794087]], "min": 13}, {"coords": [[40.747, -73.954], [40.7484405, -73.9856644]], "min": 13}, {"coords": [[40.747, -73.954], [40.7396251, -74.0088346]], "min": 17}, {"coords": [[40.747, -73.954], [40.7538, -74.0019]], "min": 16}, {"coords": [[40.747, -73.954], [40.7223, -73.9874]], "min": 15}, {"coords": [[40.747, -73.954], [40.717, -73.9569]], "min": 14}, {"coords": [[40.747, -73.954], [40.7794368, -73.9631613]], "min": 15}, {"coords": [[40.747, -73.954], [40.7782, -73.9656]], "min": 15}, {"coords": [[40.747, -73.954], [40.7127, -74.0134]], "min": 20}, {"coords": [[40.747, -73.954], [40.748, -74.0048]], "min": 16}], [{"coords": [[40.7596, -73.83], [40.761, -73.951]], "min": 27}, {"coords": [[40.7596, -73.83], [40.747, -73.954]], "min": 28}, {"coords": [[40.7596, -73.83]], "min": 0}, {"coords": [[40.7596, -73.83], [40.8296, -73.9262]], "min": 29}, {"coords": [[40.7596, -73.83], [40.5749, -73.9857]], "min": 54}, {"coords": [[40.7596, -73.83], [40.7593495, -73.9794087]], "min": 32}, {"coords": [[40.7596, -73.83], [40.7484405, -73.9856644]], "min": 33}, {"coords": [[40.7596, -73.83], [40.7396251, -74.0088346]], "min": 37}, {"coords": [[40.7596, -73.83], [40.7538, -74.0019]], "min": 36}, {"coords": [[40.7596, -73.83], [40.7223, -73.9874]], "min": 34}, {"coords": [[40.7596, -73.83], [40.717, -73.9569]], "min": 30}, {"coords": [[40.7596, -73.83], [40.7794368, -73.9631613]], "min": 30}, {"coords": [[40.7596, -73.83], [40.7782, -73.9656]], "min": 30}, {"coords": [[40.7596, -73.83], [40.7127, -74.0134]], "min": 39}, {"coords": [[40.7596, -73.83], [40.748, -74.0048]], "min": 36}], [{"coords": [[40.8296, -73.9262], [40.761, -73.951]], "min": 23}, {"coords": [[40.8296, -73.9262], [40.747, -73.954]], "min": 26}, {"coords": [[40.8296, -73.9262], [40.7596, -73.83]], "min": 29}, {"coords": [[40.8296, -73.9262]], "min": 0}, {"coords": [[40.8296, -73.9262], [40.5749, -73.9857]], "min": 63}, {"coords": [[40.8296, -73.9262], [40.7593495, -73.9794087]], "min": 25}, {"coords": [[40.8296, -73.9262], [40.7484405, -73.9856644]], "min": 28}, {"coords": [[40.8296, -73.9262], [40.7396251, -74.0088346]], "min": 31}, {"coords": [[40.8296, -73.9262], [40.7538, -74.0019]], "min": 28}, {"coords": [[40.8296, -73.9262], [40.7223, -73.9874]], "min": 33}, {"coords": [[40.8296, -73.9262], [40.717, -73.9569]], "min": 32}, {"coords": [[40.8296, -73.9262], [40.7794368, -73.9631613]], "min": 20}, {"coords": [[40.8296, -73.9262], [40.7782, -73.9656]], "min": 21}, {"coords": [[40.8296, -73.9262], [40.7127, -74.0134]], "min": 36}, {"coords": [[40.8296, -73.9262], [40.748, -74.0048]], "min": 29}], [{"coords": [[40.5749, -73.9857], [40.761, -73.951]], "min": 48}, {"coords": [[40.5749, -73.9857], [40.747, -73.954]], "min": 45}, {"coords": [[40.5749, -73.9857], [40.7596, -73.83]], "min": 54}, {"coords": [[40.5749, -73.9857], [40.8296, -73.9262]], "min": 63}, {"coords": [[40.5749, -73.9857]], "min": 0}, {"coords": [[40.5749, -73.9857], [40.7593495, -73.9794087]], "min": 47}, {"coords": [[40.5749, -73.9857], [40.7484405, -73.9856644]], "min": 45}, {"coords": [[40.5749, -73.9857], [40.7396251, -74.0088346]], "min": 43}, {"coords": [[40.5749, -73.9857], [40.7538, -74.0019]], "min": 46}, {"coords": [[40.5749, -73.9857], [40.7223, -73.9874]], "min": 39}, {"coords": [[40.5749, -73.9857], [40.717, -73.9569]], "min": 38}, {"coords": [[40.5749, -73.9857], [40.7794368, -73.9631613]], "min": 51}, {"coords": [[40.5749, -73.9857], [40.7782, -73.9656]], "min": 51}, {"coords": [[40.5749, -73.9857], [40.7127, -74.0134]], "min": 38}, {"coords": [[40.5749, -73.9857], [40.748, -74.0048]], "min": 45}], [{"coords": [[40.7593495, -73.9794087], [40.761, -73.951]], "min": 13}, {"coords": [[40.7593495, -73.9794087], [40.747, -73.954]], "min": 13}, {"coords": [[40.7593495, -73.9794087], [40.7596, -73.83]], "min": 32}, {"coords": [[40.7593495, -73.9794087], [40.8296, -73.9262]], "min": 25}, {"coords": [[40.7593495, -73.9794087], [40.5749, -73.9857]], "min": 47}, {"coords": [[40.7593495, -73.9794087]], "min": 0}, {"coords": [[40.7593495, -73.9794087], [40.7484405, -73.9856644]], "min": 11}, {"coords": [[40.7593495, -73.9794087], [40.7396251, -74.0088346]], "min": 14}, {"coords": [[40.7593495, -73.9794087], [40.7538, -74.0019]], "min": 12}, {"coords": [[40.7593495, -73.9794087], [40.7223, -73.9874]], "min": 16}, {"coords": [[40.7593495, -73.9794087], [40.717, -73.9569]], "min": 18}, {"coords": [[40.7593495, -73.9794087], [40.7794368, -73.9631613]], "min": 13}, {"coords": [[40.7593495, -73.9794087], [40.7782, -73.9656]], "min": 13}, {"coords": [[40.7593495, -73.9794087], [40.7127, -74.0134]], "min": 19}, {"coords": [[40.7593495, -73.9794087], [40.748, -74.0048]], "min": 13}], [{"coords": [[40.7484405, -73.9856644], [40.761, -73.951]], "min": 14}, {"coords": [[40.7484405, -73.9856644], [40.747, -73.954]], "min": 13}, {"coords": [[40.7484405, -73.9856644], [40.7596, -73.83]], "min": 33}, {"coords": [[40.7484405, -73.9856644], [40.8296, -73.9262]], "min": 28}, {"coords": [[40.7484405, -73.9856644], [40.5749, -73.9857]], "min": 45}, {"coords": [[40.7484405, -73.9856644], [40.7593495, -73.9794087]], "min": 11}, {"coords": [[40.7484405, -73.9856644]], "min": 0}, {"coords": [[40.7484405, -73.9856644], [40.7396251, -74.0088346]], "min": 12}, {"coords": [[40.7484405, -73.9856644], [40.7538, -74.0019]], "min": 11}, {"coords": [[40.7484405, -73.9856644], [40.7223, -73.9874]], "min": 14}, {"coords": [[40.7484405, -73.9856644], [40.717, -73.9569]], "min": 16}, {"coords": [[40.7484405, -73.9856644], [40.7794368, -73.9631613]], "min": 15}, {"coords": [[40.7484405, -73.9856644], [40.7782, -73.9656]], "min": 15}, {"coords": [[40.7484405, -73.9856644], [40.7127, -74.0134]], "min": 17}, {"coords": [[40.7484405, -73.9856644], [40.748, -74.0048]], "min": 11}], [{"coords": [[40.7396251, -74.0088346], [40.761, -73.951]], "min": 18}, {"coords": [[40.7396251, -74.0088346], [40.747, -73.954]], "min": 17}, {"coords": [[40.7396251, -74.0088346], [40.7596, -73.83]], "min": 37}, {"coords": [[40.7396251, -74.0088346], [40.8296, -73.9262]], "min": 31}, {"coords": [[40.7396251, -74.0088346], [40.5749, -73.9857]], "min": 43}, {"coords": [[40.7396251, -74.0088346], [40.7593495, -73.9794087]], "min": 14}, {"coords": [[40.7396251, -74.0088346], [40.7484405, -73.9856644]], "min": 12}, {"coords": [[40.7396251, -74.0088346]], "min": 0}, {"coords": [[40.7396251, -74.0088346], [40.7538, -74.0019]], "min": 11}, {"coords": [[40.7396251, -74.0088346], [40.7223, -73.9874]], "min": 13}, {"coords": [[40.7396251, -74.0088346], [40.717, -73.9569]], "min": 18}, {"coords": [[40.7396251, -74.0088346], [40.7794368, -73.9631613]], "min": 19}, {"coords": [[40.7396251, -74.0088346], [40.7782, -73.9656]], "min": 19}, {"coords": [[40.7396251, -74.0088346], [40.7127, -74.0134]], "min": 14}, {"coords": [[40.7396251, -74.0088346], [40.748, -74.0048]], "min": 10}], [{"coords": [[40.7538, -74.0019], [40.761, -73.951]], "min": 16}, {"coords": [[40.7538, -74.0019], [40.747, -73.954]], "min": 16}, {"coords": [[40.7538, -74.0019], [40.7596, -73.83]], "min": 36}, {"coords": [[40.7538, -74.0019], [40.8296, -73.9262]], "min": 28}, {"coords": [[40.7538, -74.0019], [40.5749, -73.9857]], "min": 46}, {"coords": [[40.7538, -74.0019], [40.7593495, -73.9794087]], "min": 12}, {"coords": [[40.7538, -74.0019], [40.7484405, -73.9856644]], "min": 11}, {"coords": [[40.7538, -74.0019], [40.7396251, -74.0088346]], "min": 11}, {"coords": [[40.7538, -74.0019]], "min": 0}, {"coords": [[40.7538, -74.0019], [40.7223, -73.9874]], "min": 15}, {"coords": [[40.7538, -74.0019], [40.717, -73.9569]], "min": 19}, {"coords": [[40.7538, -74.0019], [40.7794368, -73.9631613]], "min": 16}, {"coords": [[40.7538, -74.0019], [40.7782, -73.9656]], "min": 16}, {"coords": [[40.7538, -74.0019], [40.7127, -74.0134]], "min": 17}, {"coords": [[40.7538, -74.0019], [40.748, -74.0048]], "min": 9}], [{"coords": [[40.7223, -73.9874], [40.761, -73.951]], "min": 18}, {"coords": [[40.7223, -73.9874], [40.747, -73.954]], "min": 15}, {"coords": [[40.7223, -73.9874], [40.7596, -73.83]], "min": 34}, {"coords": [[40.7223, -73.9874], [40.8296, -73.9262]], "min": 33}, {"coords": [[40.7223, -73.9874], [40.5749, -73.9857]], "min": 39}, {"coords": [[40.7223, -73.9874], [40.7593495, -73.9794087]], "min": 16}, {"coords": [[40.7223, -73.9874], [40.7484405, -73.9856644]], "min": 14}, {"coords": [[40.7223, -73.9874], [40.7396251, -74.0088346]], "min": 13}, {"coords": [[40.7223, -73.9874], [40.7538, -74.0019]], "min": 15}, {"coords": [[40.7223, -73.9874]], "min": 0}, {"coords": [[40.7223, -73.9874], [40.717, -73.9569]], "min": 13}, {"coords": [[40.7223, -73.9874], [40.7794368, -73.9631613]], "min": 21}, {"coords": [[40.7223, -73.9874], [40.7782, -73.9656]], "min": 20}, {"coords": [[40.7223, -73.9874], [40.7127, -74.0134]], "min": 13}, {"coords": [[40.7223, -73.9874], [40.748, -74.0048]], "min": 14}], [{"coords": [[40.717, -73.9569], [40.761, -73.951]], "min": 17}, {"coords": [[40.717, -73.9569], [40.747, -73.954]], "min": 14}, {"coords": [[40.717, -73.9569], [40.7596, -73.83]], "min": 30}, {"coords": [[40.717, -73.9569], [40.8296, -73.9262]], "min": 32}, {"coords": [[40.717, -73.9569], [40.5749, -73.9857]], "min": 38}, {"coords": [[40.717, -73.9569], [40.7593495, -73.9794087]], "min": 18}, {"coords": [[40.717, -73.9569], [40.7484405, -73.9856644]], "min": 16}, {"coords": [[40.717, -73.9569], [40.7396251, -74.0088346]], "min": 18}, {"coords": [[40.717, -73.9569], [40.7538, -74.0019]], "min": 19}, {"coords": [[40.717, -73.9569], [40.7223, -73.9874]], "min": 13}, {"coords": [[40.717, -73.9569]], "min": 0}, {"coords": [[40.717, -73.9569], [40.7794368, -73.9631613]], "min": 21}, {"coords": [[40.717, -73.9569], [40.7782, -73.9656]], "min": 21}, {"coords": [[40.717, -73.9569], [40.7127, -74.0134]], "min": 17}, {"coords": [[40.717, -73.9569], [40.748, -74.0048]], "min": 18}], [{"coords": [[40.7794368, -73.9631613], [40.761, -73.951]], "min": 12}, {"coords": [[40.7794368, -73.9631613], [40.747, -73.954]], "min": 15}, {"coords": [[40.7794368, -73.9631613], [40.7596, -73.83]], "min": 30}, {"coords": [[40.7794368, -73.9631613], [40.8296, -73.9262]], "min": 20}, {"coords": [[40.7794368, -73.9631613], [40.5749, -73.9857]], "min": 51}, {"coords": [[40.7794368, -73.9631613], [40.7593495, -73.9794087]], "min": 13}, {"coords": [[40.7794368, -73.9631613], [40.7484405, -73.9856644]], "min": 15}, {"coords": [[40.7794368, -73.9631613], [40.7396251, -74.0088346]], "min": 19}, {"coords": [[40.7794368, -73.9631613], [40.7538, -74.0019]], "min": 16}, {"coords": [[40.7794368, -73.9631613], [40.7223, -73.9874]], "min": 21}, {"coords": [[40.7794368, -73.9631613], [40.717, -73.9569]], "min": 21}, {"coords": [[40.7794368, -73.9631613]], "min": 0}, {"coords": [[40.7794368, -73.9631613], [40.7782, -73.9656]], "min": 8}, {"coords": [[40.7794368, -73.9631613], [40.7127, -74.0134]], "min": 24}, {"coords": [[40.7794368, -73.9631613], [40.748, -74.0048]], "min": 17}], [{"coords": [[40.7782, -73.9656], [40.761, -73.951]], "min": 12}, {"coords": [[40.7782, -73.9656], [40.747, -73.954]], "min": 15}, {"coords": [[40.7782, -73.9656], [40.7596, -73.83]], "min": 30}, {"coords": [[40.7782, -73.9656], [40.8296, -73.9262]], "min": 21}, {"coords": [[40.7782, -73.9656], [40.5749, -73.9857]], "min": 51}, {"coords": [[40.7782, -73.9656], [40.7593495, -73.9794087]], "min": 13}, {"coords": [[40.7782, -73.9656], [40.7484405, -73.9856644]], "min": 15}, {"coords": [[40.7782, -73.9656], [40.7396251, -74.0088346]], "min": 19}, {"coords": [[40.7782, -73.9656], [40.7538, -74.0019]], "min": 16}, {"coords": [[40.7782, -73.9656], [40.7223, -73.9874]], "min": 20}, {"coords": [[40.7782, -73.9656], [40.717, -73.9569]], "min": 21}, {"coords": [[40.7782, -73.9656], [40.7794368, -73.9631613]], "min": 8}, {"coords": [[40.7782, -73.9656]], "min": 0}, {"coords": [[40.7782, -73.9656], [40.7127, -74.0134]], "min": 24}, {"coords": [[40.7782, -73.9656], [40.748, -74.0048]], "min": 17}], [{"coords": [[40.7127, -74.0134], [40.761, -73.951]], "min": 22}, {"coords": [[40.7127, -74.0134], [40.747, -73.954]], "min": 20}, {"coords": [[40.7127, -74.0134], [40.7596, -73.83]], "min": 39}, {"coords": [[40.7127, -74.0134], [40.8296, -73.9262]], "min": 36}, {"coords": [[40.7127, -74.0134], [40.5749, -73.9857]], "min": 38}, {"coords": [[40.7127, -74.0134], [40.7593495, -73.9794087]], "min": 19}, {"coords": [[40.7127, -74.0134], [40.7484405, -73.9856644]], "min": 17}, {"coords": [[40.7127, -74.0134], [40.7396251, -74.0088346]], "min": 14}, {"coords": [[40.7127, -74.0134], [40.7538, -74.0019]], "min": 17}, {"coords": [[40.7127, -74.0134], [40.7223, -73.9874]], "min": 13}, {"coords": [[40.7127, -74.0134], [40.717, -73.9569]], "min": 17}, {"coords": [[40.7127, -74.0134], [40.7794368, -73.9631613]], "min": 24}, {"coords": [[40.7127, -74.0134], [40.7782, -73.9656]], "min": 24}, {"coords": [[40.7127, -74.0134]], "min": 0}, {"coords": [[40.7127, -74.0134], [40.748, -74.0048]], "min": 16}], [{"coords": [[40.748, -74.0048], [40.761, -73.951]], "min": 17}, {"coords": [[40.748, -74.0048], [40.747, -73.954]], "min": 16}, {"coords": [[40.748, -74.0048], [40.7596, -73.83]], "min": 36}, {"coords": [[40.748, -74.0048], [40.8296, -73.9262]], "min": 29}, {"coords": [[40.748, -74.0048], [40.5749, -73.9857]], "min": 45}, {"coords": [[40.748, -74.0048], [40.7593495, -73.9794087]], "min": 13}, {"coords": [[40.748, -74.0048], [40.7484405, -73.9856644]], "min": 11}, {"coords": [[40.748, -74.0048], [40.7396251, -74.0088346]], "min": 10}, {"coords": [[40.748, -74.0048], [40.7538, -74.0019]], "min": 9}, {"coords": [[40.748, -74.0048], [40.7223, -73.9874]], "min": 14}, {"coords": [[40.748, -74.0048], [40.717, -73.9569]], "min": 18}, {"coords": [[40.748, -74.0048], [40.7794368, -73.9631613]], "min": 17}, {"coords": [[40.748, -74.0048], [40.7782, -73.9656]], "min": 17}, {"coords": [[40.748, -74.0048], [40.7127, -74.0134]], "min": 16}, {"coords": [[40.748, -74.0048]], "min": 0}]]}];
+const MODE={walk:"\u{1F6B6}",bike:"\u{1F6B2}",subway:"\u{1F687}",taxi:"\u{1F695}",run:"\u{1F3C3}"};
+const MODELABEL={walk:"\u00e0 pied",bike:"\u00e0 v\u00e9lo",subway:"m\u00e9tro",taxi:"taxi",run:"en courant"};
+const CATICON={view:"\u{1F306}",museum:"\u{1F5BC}\uFE0F",food:"\u{1F37D}\uFE0F",park:"\u{1F333}",hotel:"\u{1F3E8}",show:"\u{1F3AD}",transport:"\u{1F689}",monument:"\u{1F4F8}",neighborhood:"\u{1F3D9}\uFE0F",run:"\u{1F3C3}",church:"\u26EA"};
+const CATLABEL={view:"Point de vue, tour",museum:"Mus\u00e9e",food:"Repas, douceur",park:"Parc, d\u00e9tente",hotel:"Notre nid",show:"Spectacle, sc\u00e8ne",transport:"Gare, ferry",monument:"Monument, photo",neighborhood:"Quartier",run:"Course",church:"Gospel, \u00e9glise"};
+const RESLINK={"SUMMIT One Vanderbilt":"https://summitov.com","EDGE Hudson Yards":"https://www.edgenyc.com","MoMA":"https://www.moma.org","Top of the Rock":"https://www.topoftherocknyc.com","Empire State Building":"https://www.esbnyc.com","Whitney Museum":"https://whitney.org","Guggenheim":"https://www.guggenheim.org","Village Vanguard":"https://villagevanguard.com","Hamilton, Richard Rodgers":"https://www.hamiltonbroadway.com"};
+const DEFAULT_START={0:"15:30",1:"10:00",2:"08:30",3:"07:00",4:"09:00",5:"10:00"};
 
-const CATICON={
-  view:"🌆", museum:"🖼️", food:"🍽️", park:"🌳", hotel:"🏨",
-  show:"🎭", transport:"🚉", monument:"📸", neighborhood:"🏙️",
-  run:"🏃", church:"⛪", shop:"🛍️"
+// liste des r\u00e9servations : id stable, gid de l'\u00e9tape li\u00e9e (pour la coche dans l'itin\u00e9raire),
+// done=true pour celles d\u00e9j\u00e0 r\u00e9serv\u00e9es au d\u00e9part
+const RESA=[
+ {id:"summit",gid:"0_10",title:"SUMMIT One Vanderbilt",info:"mer 24, ~19h30 (coucher 20h30) \u00b7 cr\u00e9neau Sunset, option Ascent",link:"https://summitov.com",urgent:true},
+ {id:"edge",gid:"3_17",title:"EDGE Hudson Yards",info:"sam 27, ~19h30 (coucher 20h32) \u00b7 cr\u00e9neau Sunset",link:"https://www.edgenyc.com",urgent:true},
+ {id:"moma",gid:"1_4",title:"MoMA",info:"jeu 25, ouverture 10h30",link:"https://www.moma.org"},
+ {id:"totr",gid:"1_6",title:"Top of the Rock",info:"jeu 25 \u00b7 bonus",link:"https://www.topoftherocknyc.com"},
+ {id:"esb",gid:"1_11",title:"Empire State Building",info:"jeu 25, de nuit \u00b7 bonus",link:"https://www.esbnyc.com"},
+ {id:"whitney",gid:"0_3",title:"Whitney Museum",info:"mer 24 \u00b7 bonus",link:"https://whitney.org"},
+ {id:"gugg",gid:"1_2",title:"Guggenheim",info:"jeu 25 \u00b7 bonus++",link:"https://www.guggenheim.org"},
+ {id:"hamilton",gid:"1_11",title:"Hamilton",info:"jeu 25, 19h \u00b7 Richard Rodgers",link:"https://www.hamiltonbroadway.com",done:true},
+ {id:"vanguard",gid:"2_8",title:"Village Vanguard",info:"ven 26, 20h \u00b7 jazz",link:"https://villagevanguard.com",done:true},
+ {id:"gospel",gid:"4_2",title:"Gospel Harlem",info:"dim 28, office 11h, file d\u00e8s 9h45",link:"https://www.abyssinian.org"},
+ {id:"citibike",gid:null,title:"Citi Bike",info:"ven 26 \u00b7 Day Pass",link:"https://citibikenyc.com"},
+ {id:"consigne",gid:null,title:"Consigne bagages 125th St",info:"dim 28",link:"https://bounce.com"},
+ {id:"ferry",gid:null,title:"Staten Island Ferry",info:"sam 27, ~17h \u00b7 gratuit, sans billet. Croisi\u00e8re comment\u00e9e en option : statuecitycruises.com",link:"https://www.statuecitycruises.com"},
+ {id:"omny",gid:null,title:"OMNY (m\u00e9tro)",info:"t\u00e9l\u00e9phone ou carte sans contact, plafond 35 $/pers / 7 j",link:null}
+];
+let resaDone=new Set(RESA.filter(r=>r.done).map(r=>r.id));
+
+// état par jour : order (indices d'origine), off (set), start, fixedTimes{}, durs{}, hereIdx (position "on est ici"), startNow(min)
+function freshState(){
+  return days.map((d,i)=>({
+    order:d.stops.map((_,k)=>k),
+    off:new Set(d.stops.map((s,k)=> s.lvl!=="core"?k:null).filter(x=>x!==null)),
+    start:DEFAULT_START[i]||"09:00",
+    fixedTimes:{}, durs:{}, hereIdx:null, startNowMin:null,
+    extra:[]  // gids de lieux import\u00e9s d'autres jours/du catalogue
+  }));
+}
+let state=freshState();
+
+const TILES={
+  sombre:{url:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"},
+  clair:{url:"https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"},
+  plan:{url:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"},
+  satellite:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"}
 };
-const CATLABEL={
-  view:"Point de vue / tour", museum:"Musée", food:"Repas / pause",
-  park:"Parc / chill", hotel:"Hôtel", show:"Spectacle / scène",
-  transport:"Gare / ferry", monument:"Monument / spot photo",
-  neighborhood:"Quartier", run:"Course", church:"Gospel / église"
-};
+const map=L.map("map",{zoomControl:true,attributionControl:false}).setView([40.745,-73.99],12);
+let tileLayer=L.tileLayer(TILES.sombre.url,{maxZoom:19}).addTo(map);
+function setTiles(k){ map.removeLayer(tileLayer); tileLayer=L.tileLayer(TILES[k].url,{maxZoom:19}).addTo(map); }
 
-const days=[{"name": "Mer 24 — Village, Hudson & Whitney", "color": "#e6194B", "meta": "~5,5 km à pied", "stops": [{"n": "H", "name": "Hôtel — 103 Waverly Place", "ll": [40.73345, -73.99857], "m": "walk", "d": "Arrivée 16h. Greenwich Village.", "cat": "hotel"}, {"name": "Washington Square Park", "ll": [40.7308838, -73.997332], "m": "walk", "d": "Arche iconique, cœur du Village, ambiance NYU.", "q": "Washington Square Park New York", "cat": "park"}, {"name": "Stonewall Inn", "ll": [40.7338326, -74.0021626], "m": "walk", "d": "Berceau des droits LGBTQ+, à 5 min de l'hôtel.", "q": "Stonewall Inn New York", "cat": "monument"}, {"name": "Whitney Museum", "ll": [40.7396251, -74.0088346], "m": "walk", "d": "Art américain (Hopper, Pollock). Bonus, ferme 18h.", "q": "Whitney Museum New York", "bonus": true, "cat": "museum"}, {"name": "High Line (Gansevoort)", "ll": [40.7394043, -74.0080623], "m": "walk", "d": "Promenade aérienne, jardins.", "q": "High Line Gansevoort New York", "cat": "park"}, {"name": "Chelsea Market", "ll": [40.7424511, -74.0060901], "m": "walk", "d": "Halle gourmande sous la High Line. Bonus.", "q": "Chelsea Market New York", "bonus": true, "cat": "food"}, {"name": "Little Island (Pier 55)", "ll": [40.7420024, -74.010299], "m": "walk", "d": "Parc flottant design sur l'Hudson.", "q": "Little Island Pier 55 New York", "cat": "park"}, {"name": "Vessel & Hudson Yards", "ll": [40.7538, -74.0019], "m": "walk", "d": "Structure en nid d'abeille, plaza moderne. Bonus.", "q": "Vessel Hudson Yards New York", "bonus": true, "cat": "monument"}, {"name": "Grand Central Terminal", "ll": [40.7527, -73.9772], "m": "subway", "d": "Hall majestueux, plafond étoilé. Bonus, sous SUMMIT.", "q": "Grand Central Terminal New York", "bonus": true, "cat": "transport"}, {"name": "SUMMIT One Vanderbilt", "ll": [40.7527746, -73.9787253], "m": "walk", "d": "COUCHER. Sphères miroirs (Air), glass floor, vue face à l'Empire State. ~19h30. Réserver sunset.", "q": "SUMMIT One Vanderbilt", "cat": "view"}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7308838, -73.997332]], "dash": false}, {"coords": [[40.7308838, -73.997332], [40.7338326, -74.0021626]], "dash": false}, {"coords": [[40.7338326, -74.0021626], [40.7396251, -74.0088346]], "dash": false}, {"coords": [[40.7396251, -74.0088346], [40.7394043, -74.0080623]], "dash": false}, {"coords": [[40.7394043, -74.0080623], [40.7424511, -74.0060901]], "dash": false}, {"coords": [[40.7424511, -74.0060901], [40.7420024, -74.010299]], "dash": false}, {"coords": [[40.7420024, -74.010299], [40.7538, -74.0019]], "dash": false}, {"coords": [[40.7538, -74.0019], [40.7527, -73.9772]], "dash": true}, {"coords": [[40.7527, -73.9772], [40.7527746, -73.9787253]], "dash": false}]}, {"name": "Jeu 25 — MoMA, Guggenheim & Hamilton", "color": "#3cb44b", "meta": "~7 km à pied", "stops": [{"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "subway", "d": "Départ Midtown, métro F/M.", "cat": "hotel"}, {"name": "MoMA", "ll": [40.7614327, -73.9776216], "m": "subway", "d": "Van Gogh, Monet, Picasso. Ouverture 10h30, ~2h30.", "q": "MoMA Museum of Modern Art New York", "cat": "museum"}, {"name": "Guggenheim", "ll": [40.7829796, -73.9589706], "m": "walk", "d": "Bonus. Spirale de F. L. Wright. Si fait, zappe Top of the Rock.", "q": "Guggenheim Museum New York", "bonus": true, "cat": "museum"}, {"name": "St. Patrick's Cathedral", "ll": [40.7585, -73.9759], "m": "walk", "d": "Cathédrale néogothique, 5e Avenue. Bonus.", "q": "St Patrick's Cathedral New York", "bonus": true, "cat": "monument"}, {"name": "Top of the Rock", "ll": [40.7593495, -73.9794087], "m": "walk", "d": "Observatoire Rockefeller en journée. Vue Central Park + Empire State.", "q": "Top of the Rock New York", "cat": "view", "bonus": true}, {"name": "Radio City Music Hall", "ll": [40.7599, -73.9799], "m": "walk", "d": "Salle Art déco mythique. Bonus.", "q": "Radio City Music Hall New York", "bonus": true, "cat": "show"}, {"name": "Bryant Park & NY Public Library", "ll": [40.7536, -73.9832], "m": "walk", "d": "Parc élégant + bibliothèque aux lions. Bonus.", "q": "Bryant Park New York Public Library", "bonus": true, "cat": "park"}, {"name": "Times Square", "ll": [40.7579747, -73.9855426], "m": "walk", "d": "À voir de nuit avant le théâtre.", "q": "Times Square New York", "cat": "monument"}, {"name": "Richard Rodgers — Hamilton", "ll": [40.7590916, -73.9865404], "m": "walk", "d": "Hamilton, 19h. ~2h45.", "q": "Richard Rodgers Theatre New York", "cat": "show"}, {"name": "Empire State Building (nuit)", "ll": [40.7484405, -73.9856644], "m": "walk", "d": "Après le spectacle, vue de nuit. Ouvert tard.", "q": "Empire State Building New York", "cat": "view", "bonus": true}], "_segs": [{"coords": [[40.73345, -73.99857], [40.7614327, -73.9776216]], "dash": true}, {"coords": [[40.7614327, -73.9776216], [40.7829796, -73.9589706]], "dash": false}, {"coords": [[40.7829796, -73.9589706], [40.7585, -73.9759]], "dash": false}, {"coords": [[40.7585, -73.9759], [40.7593495, -73.9794087]], "dash": false}, {"coords": [[40.7593495, -73.9794087], [40.7599, -73.9799]], "dash": false}, {"coords": [[40.7599, -73.9799], [40.7536, -73.9832]], "dash": false}, {"coords": [[40.7536, -73.9832], [40.7579747, -73.9855426]], "dash": false}, {"coords": [[40.7579747, -73.9855426], [40.7590916, -73.9865404]], "dash": false}, {"coords": [[40.7590916, -73.9865404], [40.7484405, -73.9856644]], "dash": false}]}, {"name": "Ven 26 — Brooklyn à vélo & jazz", "color": "#4363d8", "meta": "~7 km marche + 6 km vélo (+ run option)", "stops": [{"name": "Run Central Park (option, tôt)", "ll": [40.7857, -73.9627], "m": "run", "d": "Bonus. Run matinal tôt au réservoir avant Brooklyn, si l'envie. Taxi/métro aller-retour.", "q": "Central Park Reservoir running New York", "bonus": true, "cat": "run"}, {"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Citi Bike vers le pont.", "cat": "hotel"}, {"name": "Pont de Brooklyn", "ll": [40.7060855, -73.9968643], "m": "bike", "d": "Traversée à vélo, tours gothiques, skyline.", "q": "Brooklyn Bridge New York", "cat": "monument"}, {"name": "DUMBO", "ll": [40.7033164, -73.9881451], "m": "bike", "d": "Quartier pavé, vue Manhattan Bridge, Jane's Carousel.", "q": "DUMBO Brooklyn", "cat": "neighborhood"}, {"name": "Brooklyn Bridge Park", "ll": [40.7022422, -73.9958601], "m": "walk", "d": "Parc waterfront, meilleure skyline de Manhattan.", "q": "Brooklyn Bridge Park New York", "cat": "park"}, {"name": "Brooklyn Heights Promenade", "ll": [40.6964173, -73.9977463], "m": "walk", "d": "Esplanade suspendue, vue Lower Manhattan et Statue.", "q": "Brooklyn Heights Promenade", "cat": "park"}, {"name": "Williamsburg (Bedford Ave)", "ll": [40.717, -73.9569], "m": "bike", "d": "Rue branchée, friperies, cafés, street art. Bonus.", "q": "Bedford Avenue Williamsburg Brooklyn", "bonus": true, "cat": "neighborhood"}, {"name": "Domino Park", "ll": [40.7148803, -73.967851], "m": "walk", "d": "Parc reconverti, vue Williamsburg Bridge.", "q": "Domino Park Williamsburg Brooklyn", "cat": "park"}, {"name": "Village Vanguard", "ll": [40.7360334, -74.0016548], "m": "subway", "d": "Club de jazz légendaire, 20h. À 8 min de l'hôtel.", "q": "Village Vanguard New York", "cat": "show"}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true}, {"coords": [[40.73345, -73.99857], [40.7060855, -73.9968643]], "dash": false}, {"coords": [[40.7060855, -73.9968643], [40.7033164, -73.9881451]], "dash": false}, {"coords": [[40.7033164, -73.9881451], [40.7022422, -73.9958601]], "dash": false}, {"coords": [[40.7022422, -73.9958601], [40.6964173, -73.9977463]], "dash": false}, {"coords": [[40.6964173, -73.9977463], [40.717, -73.9569]], "dash": false}, {"coords": [[40.717, -73.9569], [40.7148803, -73.967851]], "dash": false}, {"coords": [[40.7148803, -73.967851], [40.7360334, -74.0016548]], "dash": true}]}, {"name": "Sam 27 — Sud iconique & EDGE", "color": "#f58231", "meta": "run + respiration AM · sud allégé PM", "stops": [{"name": "Run Central Park (matin)", "ll": [40.7857, -73.9627], "m": "taxi", "d": "Grande boucle ou réservoir, tôt. Taxi aller. La matinée reste volontairement respirante : run, café, rien d'imposé.", "cat": "run"}, {"name": "Hôtel — douche + matinée libre", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Retour, douche, brunch tranquille dans le Village. Demi-journée de respiration assumée avant le parcours sud de l'après-midi.", "cat": "hotel"}, {"n": "H", "name": "Hôtel", "ll": [40.73345, -73.99857], "m": "walk", "d": "Départ à pied vers le sud. Financial District calme le week-end.", "cat": "hotel"}, {"name": "Flatiron Building", "ll": [40.7410605, -73.9896986], "m": "walk", "d": "Immeuble triangulaire iconique, Madison Square Park.", "q": "Flatiron Building New York", "cat": "monument"}, {"name": "SoHo (Broadway)", "ll": [40.7201718, -74.0014426], "m": "walk", "d": "Architecture cast-iron, boutiques, shopping.", "q": "SoHo Broadway New York", "cat": "neighborhood"}, {"name": "Nolita", "ll": [40.7224, -73.9954], "m": "walk", "d": "Boutiques pointues, jolies rues. Bonus.", "q": "Nolita New York", "bonus": true, "cat": "neighborhood"}, {"name": "Little Italy", "ll": [40.7191, -73.9973], "m": "walk", "d": "Mulberry St, terrasses italiennes. Bonus.", "q": "Little Italy Mulberry Street New York", "bonus": true, "cat": "neighborhood"}, {"name": "Chinatown", "ll": [40.7158, -73.997], "m": "walk", "d": "Déjeuner dumplings, marché animé.", "q": "Chinatown Manhattan New York", "cat": "neighborhood"}, {"name": "Katz's Delicatessen", "ll": [40.7223, -73.9874], "m": "walk", "d": "Deli mythique du Lower East Side. Bonus.", "q": "Katz's Delicatessen New York", "bonus": true, "cat": "food"}, {"name": "TriBeCa", "ll": [40.7163, -74.0086], "m": "walk", "d": "Belles rues, lofts, ambiance chic.", "q": "Tribeca New York", "cat": "neighborhood"}, {"name": "Oculus (WTC)", "ll": [40.7117, -74.0111], "m": "walk", "d": "Gare-cathédrale blanche de Calatrava. Bonus.", "q": "Oculus WTC New York", "bonus": true, "cat": "transport"}, {"name": "9/11 Memorial", "ll": [40.7115776, -74.0133362], "m": "walk", "d": "Bassins dans l'empreinte des tours.", "q": "9/11 Memorial New York", "cat": "monument"}, {"name": "Charging Bull", "ll": [40.7055746, -74.0134499], "m": "walk", "d": "Le taureau de Wall Street. Quartier désert le week-end.", "q": "Charging Bull Wall Street", "cat": "monument"}, {"name": "Wall Street & NYSE", "ll": [40.7069, -74.0113], "m": "walk", "d": "Bourse, Federal Hall. Bonus.", "q": "Wall Street NYSE New York", "bonus": true, "cat": "monument"}, {"name": "Pier 15 East River", "ll": [40.7043756, -74.0029654], "m": "walk", "d": "Esplanade deux niveaux, vue pont de Brooklyn.", "q": "Pier 15 East River Esplanade New York", "cat": "park", "bonus": true}, {"name": "Staten Island Ferry", "ll": [40.7010853, -74.0131012], "m": "walk", "d": "Ferry gratuit, passe près de la Statue. À droite à l'aller.", "q": "Staten Island Ferry Whitehall Terminal", "cat": "transport"}, {"name": "EDGE Hudson Yards", "ll": [40.7533936, -74.001055], "m": "subway", "d": "COUCHER (20h32). Pont plein air, glass floor. Avec SUMMIT mer 24, ce sont les 2 tours retenues (Top of the Rock et Empire State deviennent optionnels pour ne pas saturer). Réserver sunset.", "q": "Edge Hudson Yards New York", "cat": "view"}], "_segs": [{"coords": [[40.7857, -73.9627], [40.73345, -73.99857]], "dash": true}, {"coords": [[40.73345, -73.99857], [40.73345, -73.99857]], "dash": false}, {"coords": [[40.73345, -73.99857], [40.7410605, -73.9896986]], "dash": false}, {"coords": [[40.7410605, -73.9896986], [40.7201718, -74.0014426]], "dash": false}, {"coords": [[40.7201718, -74.0014426], [40.7224, -73.9954]], "dash": false}, {"coords": [[40.7224, -73.9954], [40.7191, -73.9973]], "dash": false}, {"coords": [[40.7191, -73.9973], [40.7158, -73.997]], "dash": false}, {"coords": [[40.7158, -73.997], [40.7223, -73.9874]], "dash": false}, {"coords": [[40.7223, -73.9874], [40.7163, -74.0086]], "dash": false}, {"coords": [[40.7163, -74.0086], [40.7117, -74.0111]], "dash": false}, {"coords": [[40.7117, -74.0111], [40.7115776, -74.0133362]], "dash": false}, {"coords": [[40.7115776, -74.0133362], [40.7055746, -74.0134499]], "dash": false}, {"coords": [[40.7055746, -74.0134499], [40.7069, -74.0113]], "dash": false}, {"coords": [[40.7069, -74.0113], [40.7043756, -74.0029654]], "dash": false}, {"coords": [[40.7043756, -74.0029654], [40.7010853, -74.0131012]], "dash": false}, {"coords": [[40.7010853, -74.0131012], [40.7533936, -74.001055]], "dash": true}]}, {"name": "Dim 28 — Gospel Harlem & départ", "color": "#911eb4", "meta": "gospel + transit JFK · vol 16h30", "stops": [{"n": "H", "name": "Hôtel — check-out", "ll": [40.73345, -73.99857], "m": "taxi", "d": "Départ avec les bagages vers Harlem. Vol 16h30 donc pas de retour à l'hôtel ensuite.", "cat": "hotel"}, {"name": "Consigne bagages (125th St)", "ll": [40.809, -73.949], "m": "taxi", "d": "Dépôt des valises près de 125th St (Bounce / Stasher / LuggageHero, ~5-8 $/bag, à réserver en ligne avant). Évite de remonter à l'hôtel.", "cat": "transport"}, {"name": "Gospel — Abyssinian / First Corinthian", "ll": [40.8166821, -73.9415561], "m": "walk", "d": "L'expérience la plus singulière du séjour. Abyssinian 11h (file dès 9h45, ~13h30) ou First Corinthian 10h (plus court). Tenue correcte : pas de short, débardeur, sac à dos.", "cat": "church"}, {"name": "Déjeuner soul food (Sylvia's / Red Rooster)", "ll": [40.8086445, -73.944479], "m": "walk", "d": "Le spot des locaux le dimanche midi, après l'office. Sylvia's (institution) ou Red Rooster (plus tendance). Cornbread, fried chicken, ambiance.", "cat": "food"}, {"name": "Récup bagages + taxi JFK", "ll": [40.809, -73.949], "m": "walk", "d": "Reprise des valises ~14h30, puis taxi direct Harlem → JFK (~50 min). Arrivée aéroport ~15h30 pour vol 16h30 (serré mais ok si gospel court ou départ anticipé du déjeuner).", "cat": "transport"}, {"name": "Run Central Park (OPTION, si pas de gospel)", "ll": [40.7857, -73.9627], "m": "taxi", "d": "ALTERNATIVE. Si vous renoncez au gospel, run matinal au réservoir puis retour. Mais le gospel est le choix recommandé ici, plus rare.", "cat": "run", "bonus": true}], "_segs": [{"coords": [[40.73345, -73.99857], [40.809, -73.949]], "dash": true}, {"coords": [[40.809, -73.949], [40.8166821, -73.9415561]], "dash": false}, {"coords": [[40.8166821, -73.9415561], [40.8086445, -73.944479]], "dash": false}, {"coords": [[40.8086445, -73.944479], [40.809, -73.949]], "dash": false}, {"coords": [[40.809, -73.949], [40.7857, -73.9627]], "dash": true}]}, {"name": "Détours lointains (option journée/demi-journée)", "color": "#42d4f4", "meta": "si une journée se libère", "stops": [{"name": "Roosevelt Island (téléphérique)", "ll": [40.761, -73.951], "m": "subway", "d": "Tramway aérien au-dessus de l'East River, vue insolite sur Manhattan. Court, original.", "q": "Roosevelt Island Tramway New York", "bonus": true, "cat": "view"}, {"name": "Long Island City (Queens)", "ll": [40.747, -73.954], "m": "subway", "d": "Gantry Plaza : la meilleure vue frontale sur la skyline de Midtown. MoMA PS1 à proximité.", "q": "Gantry Plaza State Park Long Island City", "bonus": true, "cat": "neighborhood"}, {"name": "Flushing / Queens", "ll": [40.7596, -73.83], "m": "subway", "d": "Chinatown de Queens, le plus authentique. Food incroyable.", "q": "Flushing Queens Chinatown", "bonus": true, "cat": "neighborhood"}, {"name": "Yankee Stadium (Bronx)", "ll": [40.8296, -73.9262], "m": "subway", "d": "Stade mythique du baseball. Bronx accessible en métro ligne 4/B/D.", "q": "Yankee Stadium Bronx", "bonus": true, "cat": "show"}, {"name": "Coney Island (Brooklyn)", "ll": [40.5749, -73.9857], "m": "subway", "d": "Plage, fête foraine rétro, boardwalk, hot-dogs Nathan's. ~1h de métro mais dépaysant.", "q": "Coney Island Brooklyn boardwalk", "bonus": true, "cat": "park"}], "_segs": [{"coords": [[40.761, -73.951], [40.747, -73.954]], "dash": true}, {"coords": [[40.747, -73.954], [40.7596, -73.83]], "dash": true}, {"coords": [[40.7596, -73.83], [40.8296, -73.9262]], "dash": true}, {"coords": [[40.8296, -73.9262], [40.5749, -73.9857]], "dash": true}]}];
-
-const map=L.map("map",{zoomControl:true}).setView([40.74,-73.99],12);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",maxZoom:19}).addTo(map);
-
-function makeIcon(color,label,bonus,cat){
-  const em=CATICON[cat]||"📍";
-  const ring=bonus?"border-style:dashed;":"";
-  return L.divIcon({className:"",html:"<div class=\"marker-pin\" style=\"background:"+(bonus?"#c8a24a":color)+";"+ring+"\"><span class=\"pin-em\">"+em+"</span><span class=\"pin-num\">"+label+"</span></div>",iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-15]});
+function pinIcon(color,label,emoji,bonus,off){
+  return L.divIcon({className:"",html:'<div class="pin '+(bonus?"bonus ":"")+(off?"off ":"")+'" style="background:'+(bonus?"#e8b45a":color)+'"><span class="em">'+emoji+'</span><span class="num">'+label+'</span></div>',iconSize:[30,30],iconAnchor:[15,28],popupAnchor:[0,-28]});
 }
 
-const layers=[]; const allMarkers=[];
-days.forEach((day,di)=>{
-  const grp=L.layerGroup();
-  (day._segs||[]).forEach(seg=>{
-    L.polyline(seg.coords,{color:day.color,weight:seg.dash?2.5:4,opacity:seg.dash?.65:.9,dashArray:seg.dash?"4,8":null}).addTo(grp);
-  });
-  let counter=0;
-  day.stops.forEach(s=>{
-    let lab; if(s.n){lab=s.n;} else {counter++;lab=counter;}
-    s._lab=lab;
-    const mk=L.marker(s.ll,{icon:makeIcon(day.color,lab,s.bonus,s.cat)});
-    const qq=s.q?"https://www.google.com/search?tbm=isch&q="+encodeURIComponent(s.q):null;
-    mk.bindPopup("<h3>"+(CATICON[s.cat]||"")+" "+s.name+"</h3><div class=\"meta\">"+day.name+"</div><div>"+(s.d||"")+"</div>"+(qq?"<a href=\""+qq+"\" target=\"_blank\" rel=\"noopener\">📷 Photos du lieu</a>":""));
-    mk.addTo(grp);
-    allMarkers.push({mk,di,ll:s.ll});
-  });
-  layers.push({grp,day,pts:day.stops.map(s=>s.ll)});
-});
+// --- index global des lieux par gid ---
+const GID={};
+days.forEach((d,di)=>d.stops.forEach((s,si)=>{ GID[s.gid]={s,di,si}; }));
 
-let activeDay=0;
-function showDay(idx){
-  layers.forEach((l)=>{ if(map.hasLayer(l.grp)) map.removeLayer(l.grp); });
-  layers[idx].grp.addTo(map);
-  map.fitBounds(L.latLngBounds(layers[idx].pts).pad(0.18));
-  activeDay=idx;
+// une "ref" dans order = nombre (index natif du jour) ou chaine "g:GID" (lieu import\u00e9)
+function isImp(ref){ return typeof ref==="string"; }
+function gidOf(ref){ return isImp(ref)? ref.slice(2): days; }
+function stopOf(di,ref){ return isImp(ref)? GID[ref.slice(2)].s : days[di].stops[ref]; }
+function keyOf(ref){ return isImp(ref)? ref : String(ref); } // cl\u00e9 pour durs/fixedTimes/off
+
+function parseHM(s){const x=s.split(":");return (+x[0])*60+(+x[1]);}
+function hhmm(mins){mins=Math.round(mins);let h=Math.floor(mins/60)%24;let m=((mins%60)+60)%60;return String(h).padStart(2,"0")+"h"+String(m).padStart(2,"0");}
+
+// distance/temps entre deux lieux : matrice si tous deux natifs du jour, sinon estimation g\u00e9o
+function estimTravel(a,b,mode){
+  const R=6371000, rad=x=>x*Math.PI/180;
+  const dlat=rad(b.ll[0]-a.ll[0]), dlon=rad(b.ll[1]-a.ll[1]);
+  const x=Math.sin(dlat/2)**2+Math.cos(rad(a.ll[0]))*Math.cos(rad(b.ll[0]))*Math.sin(dlon/2)**2;
+  const d=2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+  const prof=(mode==="bike")?"bike":((mode==="subway"||mode==="taxi")?"driving":"foot");
+  const sp={foot:1.25,bike:3.9,driving:6.2}[prof]; // m/s, l\u00e9g\u00e8rement conservateur (rues)
+  let m=(d/sp)/60; if(mode==="subway") m=m*0.8+8; if(mode==="taxi") m=m+3;
+  return {coords:[a.ll,b.ll], min:Math.round(m), est:true};
+}
+function travRef(di,fromRef,toRef){
+  if(!isImp(fromRef)&&!isImp(toRef)){ return days[di]._matrix[fromRef][toRef]; }
+  const a=stopOf(di,fromRef), b=stopOf(di,toRef);
+  return estimTravel(a,b,b.m);
+}
+
+function durOfRef(di,ref){ const k=keyOf(ref); return (k in state[di].durs)? state[di].durs[k] : (stopOf(di,ref).dur||0); }
+function fixOfRef(di,ref){ const k=keyOf(ref); return state[di].fixedTimes[k]||stopOf(di,ref).fixedTime||null; }
+function isActiveRef(di,ref){ return !state[di].off.has(keyOf(ref)); }
+
+// un lieu (gid) est "pris" s'il est actif dans n'importe quel jour (natif non d\u00e9sactiv\u00e9, ou import\u00e9 actif)
+function isTakenGid(gid){
+  for(let dj=0;dj<state.length;dj++){
+    for(const ref of state[dj].order){
+      if(!isActiveRef(dj,ref)) continue;
+      if(stopOf(dj,ref).gid===gid) return true;
+    }
+  }
+  return false;
+}
+
+// liste compl\u00e8te ordonn\u00e9e des refs du jour (natives + import\u00e9es ins\u00e9r\u00e9es dans order)
+function allRefs(di){ return state[di].order.slice(); }
+function activeSeq(di){
+  const st=state[di];
+  let seq=st.order.filter(ref=>isActiveRef(di,ref));
+  if(st.hereIdx!=null){ const pos=seq.findIndex(r=>keyOf(r)===keyOf(st.hereIdx)); if(pos>0) seq=seq.slice(pos); }
+  return seq;
+}
+
+function computeDay(di){
+  const st=state[di];
+  const seq=activeSeq(di);
+  let t = (st.startNowMin!=null)? st.startNowMin : parseHM(st.start);
+  const rows=[]; let prevRef=null;
+  seq.forEach((ref)=>{
+    const s=stopOf(di,ref);
+    let travel=0, est=false;
+    if(prevRef!==null){ const tr=travRef(di,prevRef,ref); travel=tr.min; est=!!tr.est; t+=travel; }
+    const fx=fixOfRef(di,ref); let gap=0;
+    if(fx){ const ft=parseHM(fx); if(ft>=t){ gap=ft-t; t=ft; } else { t=ft; } }
+    if(s.earliest){ const e=parseHM(s.earliest); if(t<e){ gap+=e-t; t=e; } }
+    const arrive=t, depart=t+durOfRef(di,ref);
+    rows.push({ref,arrive,depart,travel,gap,fixed:!!fx,est});
+    t=depart; prevRef=ref;
+  });
+  return rows;
+}
+
+function dayPolylines(di){
+  const seq=activeSeq(di); const out=[];
+  for(let i=1;i<seq.length;i++){ const seg=travRef(di,seq[i-1],seq[i]); const m=stopOf(di,seq[i]).m;
+    out.push({coords:seg.coords,dash:(m==="subway"||m==="taxi")}); }
+  return out;
 }
 
 const daysEl=document.getElementById("days");
-days.forEach((day,di)=>{
-  const wrap=document.createElement("div");wrap.className="day";
-  const h=document.createElement("div");h.className="day-h";
-  h.innerHTML="<span class=\"dot\" style=\"background:"+day.color+"\"></span>"+day.name+"<span class=\"day-meta\">"+day.meta+"</span>";
-  h.onclick=()=>{ const w=h.parentElement; const wasOpen=w.classList.contains("open"); document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); if(!wasOpen){ w.classList.add("open"); } showDay(di); };
-  wrap.appendChild(h);
-  const stopsEl=document.createElement("div");stopsEl.className="stops";
-  day.stops.forEach(s=>{
-    const st=document.createElement("div");st.className="stop"+(s.bonus?" bonus":"");
-    st.innerHTML="<span class=\"n\">"+s._lab+"</span><span class=\"mode\">"+(MODE[s.m]||"")+"</span><b>"+s.name+"</b><span class=\"desc\">"+(s.d||"")+"</span>";
-    st.onclick=(e)=>{e.stopPropagation(); if(activeDay!==di) showDay(di); map.setView(s.ll,15); const f=allMarkers.find(o=>o.di===di && o.ll[0]===s.ll[0] && o.ll[1]===s.ll[1]); if(f) f.mk.openPopup();};
-    stopsEl.appendChild(st);
+let openDay=null;
+
+function renderDays(){
+  daysEl.innerHTML="";
+  days.forEach((day,di)=>{
+    const wrap=document.createElement("div"); wrap.className="day"; wrap.dataset.di=di;
+    if(openDay===di) wrap.classList.add("open");
+    const head=document.createElement("div"); head.className="day-head";
+    head.innerHTML='<span class="day-dot" style="background:'+day.color+'"></span><div class="day-titles"><div class="day-name">'+day.name+'</div><div class="day-sub">'+day.sub+'</div></div><span class="day-chev">\u25B6</span>';
+    head.onclick=()=>{ const op=wrap.classList.contains("open"); document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); if(!op){wrap.classList.add("open");openDay=di;showDay(di);gpsHandledGid=null;maybeShowGpsBanner();} else {openDay=null;hideGpsBanner();} };
+    wrap.appendChild(head);
+    const body=document.createElement("div"); body.className="day-body";
+
+    const tools=document.createElement("div"); tools.className="day-tools";
+    tools.innerHTML='<div class="startat">D\u00e9part <input type="time" value="'+state[di].start+'" class="startInput" data-di="'+di+'"></div>'+
+      '<button class="tool-btn rest" data-di="'+di+'">\u25B6 Reste de la journ\u00e9e</button>'+
+      '<button class="tool-btn reset" data-di="'+di+'">\u21BA Parcours initial</button>';
+    body.appendChild(tools);
+
+    const rows=computeDay(di);
+    const tot=document.createElement("div"); tot.className="daytotal";
+    if(rows.length){ const last=rows[rows.length-1];
+      const vis=rows.reduce((a,r)=>a+durOfRef(di,r.ref),0), trv=rows.reduce((a,r)=>a+r.travel,0);
+      tot.innerHTML='<b>'+rows.length+'</b> \u00e9tapes actives \u00b7 fin vers <b>'+hhmm(last.depart)+'</b> \u00b7 '+(Math.round(vis/60*10)/10)+' h sur place, '+trv+' min de trajets';
+    } else tot.textContent="Aucune \u00e9tape active.";
+    body.appendChild(tot);
+
+    // bouton ajouter un lieu
+    const addBtn=document.createElement("button"); addBtn.className="tool-btn addstop"; addBtn.dataset.di=di;
+    addBtn.style.cssText="margin:0 14px 10px;display:inline-flex"; addBtn.innerHTML="\u2795 Ajouter un lieu \u00e0 ce jour";
+    body.appendChild(addBtn);
+
+    // rendu selon order (refs)
+    const seq=state[di].order;
+    const rowByKey={}; rows.forEach(r=>rowByKey[keyOf(r.ref)]=r);
+    seq.forEach((ref)=>{
+      const s=stopOf(di,ref); const act=isActiveRef(di,ref); const r=rowByKey[keyOf(ref)];
+      const imp=isImp(ref);
+      const key=keyOf(ref);
+      if(act && r && r.travel>0){
+        const tl=document.createElement("div"); tl.className="travel-line";
+        tl.innerHTML='<span>'+MODE[s.m]+'</span><span class="tl"></span><span>'+r.travel+' min '+MODELABEL[s.m]+(r.est?' \u00b7 estim\u00e9':'')+'</span>';
+        body.appendChild(tl);
+      }
+      const el=document.createElement("div"); el.className="stop"+(act?"":" off"); el.dataset.di=di; el.dataset.ref=key; el.draggable=true;
+      const bonusTag = s.lvl==="bonus"?'<span class="lvl-tag lvl-bonus">bonus</span>':(s.lvl==="bonus2"?'<span class="lvl-tag lvl-bonus2">bonus++</span>':'');
+      const altTag = s.alt_group?('<span class="alt-badge">au choix'+(s.cat==="run"?' \u00b7 ou Guggenheim':' \u00b7 ou le run')+'</span>'):'';
+      const impTag = imp?('<span class="alt-badge" style="background:rgba(91,140,255,.16);color:var(--blue)">ajout\u00e9 \u00b7 '+days[GID[s.gid].di].name.split(" ")[0]+'</span>'):'';
+      const timeStr = (act&&r)?'<span class="time">'+hhmm(r.arrive)+'</span>':'';
+      const fx=fixOfRef(di,ref);
+      const fixStr = fx?'<span class="fix">\u2605 rendez-vous</span>':'';
+      const addhint = !act?'<span class="addhint"> \u00b7 cet endroit existe d\u00e9j\u00e0, touche pour l\u2019ajouter</span>':'';
+      el.innerHTML=
+        '<span class="badge" style="background:'+(s.lvl==="core"?day.color:"#e8b45a")+'">'+CATICON[s.cat]+'</span>'+
+        '<div class="stop-row1">'+timeStr+'<span class="stop-name openmap-link" data-di="'+di+'" data-ref="'+key+'">'+s.name+'</span>'+bonusTag+altTag+impTag+'</div>'+
+        '<div class="stop-meta">'+fixStr+
+          '<span class="duredit">\u23F1 <input type="number" min="0" step="5" value="'+durOfRef(di,ref)+'" class="durInput" data-di="'+di+'" data-ref="'+key+'"> min</span>'+
+          (s.pace?('<span class="runkm">\u{1F3C3} jusqu\u2019\u00e0 '+ (Math.round((durOfRef(di,ref)/s.pace)*10)/10).toString().replace(".",",") +' km \u00e0 6:50/km</span>'):'')+
+          (fx?'<span class="fixedit">\u2605 <input type="time" value="'+fx+'" class="fixInput" data-di="'+di+'" data-ref="'+key+'"></span>':'')+
+          '<a class="openmap-link" data-di="'+di+'" data-ref="'+key+'">voir sur la carte</a>'+
+          (imp?' <a class="rmvstop" data-di="'+di+'" data-ref="'+key+'" style="color:var(--muted);cursor:pointer">retirer</a>':'')+
+        '</div>'+
+        '<div class="stop-desc">'+s.desc+addhint+'</div>'+
+        reserveHTML(s)+
+        '<div class="stop-actions"><div class="stop-toggle '+(act?"on":"")+'" data-di="'+di+'" data-ref="'+key+'"></div><span class="toggle-label">'+(act?"dans le parcours":"\u00e0 ajouter")+'</span>'+
+          (state[di].hereIdx!=null&&keyOf(state[di].hereIdx)===key?' <span style="color:var(--green);font-size:11px;font-weight:700">\u00b7 on est ici</span>':'')+
+          '</div>'+
+        '<span class="drag-handle" title="Glisser pour r\u00e9ordonner">\u2630</span>';
+      body.appendChild(el);
+    });
+    wrap.appendChild(body);
+    daysEl.appendChild(wrap);
   });
-  wrap.appendChild(stopsEl);
-  daysEl.appendChild(wrap);
-});
-
-// légende icônes
-const lgi=document.getElementById("lgIcons");
-if(lgi){ Object.keys(CATLABEL).forEach(k=>{ const d=document.createElement("div"); d.innerHTML="<span>"+CATICON[k]+"</span> "+CATLABEL[k]; lgi.appendChild(d); }); }
-const lgd=document.getElementById("lgDays");
-if(lgd){ lgd.innerHTML=days.map(d=>'<div class="lg-row"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+d.color+'"></span> '+d.name+'</div>').join(""); }
-
-showDay(0);
-document.querySelectorAll('.day').forEach(x=>x.classList.remove('open'));
-
-document.querySelectorAll(".tab").forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    document.body.classList.remove("guide","accueil");
-    const p=t.dataset.pane;
-    if(p==="guide") document.body.classList.add("guide");
-    else if(p==="accueil") document.body.classList.add("accueil");
-    else { document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); setTimeout(()=>map.invalidateSize(),60); }
-  };
-});
-// accueil par défaut
-document.body.classList.add("accueil");
-
-// --- géolocalisation ---
-let userMarker=null, userCircle=null, watchId=null, lastPos=null;
-const locBtn=document.getElementById("locBtn");
-const recenterBtn=document.getElementById("recenterBtn");
-function drawUser(lat,lng,acc){
-  lastPos=[lat,lng];
-  if(!userMarker){
-    userMarker=L.circleMarker([lat,lng],{radius:8,color:"#fff",weight:2,fillColor:"#2f6fed",fillOpacity:1}).addTo(map);
-    userCircle=L.circle([lat,lng],{radius:acc||30,color:"#2f6fed",weight:1,fillColor:"#2f6fed",fillOpacity:.12}).addTo(map);
-  } else {
-    userMarker.setLatLng([lat,lng]);
-    userCircle.setLatLng([lat,lng]).setRadius(acc||30);
-  }
+  bindAll();
+  if(openDay!=null) drawDay(openDay);
 }
-locBtn.onclick=()=>{
-  if(!("geolocation" in navigator)){ alert("Géolocalisation non disponible sur cet appareil."); return; }
-  if(watchId===null){
-    locBtn.textContent="📍 Localisation…";
-    watchId=navigator.geolocation.watchPosition(
-      p=>{ drawUser(p.coords.latitude,p.coords.longitude,p.coords.accuracy);
-           if(locBtn.textContent!=="📍 Suivi actif"){ map.setView([p.coords.latitude,p.coords.longitude],15); }
-           locBtn.textContent="📍 Suivi actif"; locBtn.classList.remove("off");
-           recenterBtn.style.display="block"; },
-      e=>{ locBtn.textContent="📍 Ma position"; locBtn.classList.add("off");
-           alert("Position indisponible. Autorise la localisation dans ton navigateur (et vérifie que la page est bien en https)."); watchId=null; },
-      {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
-    );
-  } else {
-    navigator.geolocation.clearWatch(watchId); watchId=null;
-    locBtn.textContent="📍 Ma position"; locBtn.classList.add("off");
-    recenterBtn.style.display="none";
-  }
-};
-recenterBtn.onclick=()=>{ if(lastPos) map.setView(lastPos,16); };
 
+function reserveHTML(s){
+  let out='<div class="reserve">';
+  if(s.hotel_real){
+    out+='<a href="https://washingtonsquarehotel.com" target="_blank" rel="noopener">\u{1F517} L\u2019h\u00f4tel</a>';
+    out+='<a href="https://www.google.com/search?tbm=isch&q='+encodeURIComponent("Washington Square Hotel New York")+'" target="_blank" rel="noopener" style="background:rgba(255,93,143,.1);color:var(--accent)">\u{1F4F7} L\u2019h\u00f4tel en photos</a>';
+    out+='<a href="https://www.google.com/search?tbm=isch&q='+encodeURIComponent("Washington Square Park arch Greenwich Village")+'" target="_blank" rel="noopener" style="background:rgba(84,209,140,.1);color:var(--green)">\u{1F3DE}\uFE0F Le parc et le quartier</a>';
+  } else {
+    if(RESLINK[s.name]) out+='<a href="'+RESLINK[s.name]+'" target="_blank" rel="noopener">\u{1F517} R\u00e9server</a>';
+    out+='<a href="https://www.google.com/search?tbm=isch&q='+encodeURIComponent(s.name+" New York")+'" target="_blank" rel="noopener" style="background:rgba(255,93,143,.1);color:var(--accent)">\u{1F4F7} Photos</a>';
+  }
+  // coche si l'\u00e9tape correspond \u00e0 une r\u00e9servation faite
+  const rz=RESA.find(r=>r.gid===s.gid);
+  if(rz && resaDone.has(rz.id)) out+='<span class="resa-check">\u2713 r\u00e9serv\u00e9</span>';
+  out+='</div>';
+  return out;
+}
+
+function renderResa(){
+  const list=document.getElementById("resaList"); const ctr=document.getElementById("resaCounter");
+  if(!list) return;
+  const total=RESA.filter(r=>r.id!=="omny"&&r.id!=="ferry").length; // OMNY et ferry ne se r\u00e9servent pas
+  const done=RESA.filter(r=>resaDone.has(r.id)&&r.id!=="omny"&&r.id!=="ferry").length;
+  ctr.innerHTML='<b>'+done+'</b> sur '+total+' r\u00e9serv\u00e9s';
+  ctr.className="resa-counter"+(done>=total?" full":"");
+  list.innerHTML="";
+  RESA.forEach(r=>{
+    const fait=resaDone.has(r.id);
+    const noRes=(r.id==="omny"||r.id==="ferry");
+    const el=document.createElement("div"); el.className="resa-item"+(fait?" done":"");
+    let h='<div class="resa-main"><div class="resa-title">'+r.title+(fait?' <span class="resa-check">\u2713</span>':'')+'</div><div class="resa-info">'+r.info+'</div>';
+    if(r.link) h+='<a class="resa-link" href="'+r.link+'" target="_blank" rel="noopener">\u{1F517} ouvrir le site</a>';
+    h+='</div>';
+    if(!noRes) h+='<button class="resa-btn'+(fait?" undo":"")+'" data-id="'+r.id+'">'+(fait?"\u2713 r\u00e9serv\u00e9":"C\u2019est r\u00e9serv\u00e9")+'</button>';
+    el.innerHTML=h;
+    list.appendChild(el);
+  });
+  list.querySelectorAll(".resa-btn").forEach(b=>{ b.onclick=()=>{ const id=b.dataset.id;
+    if(resaDone.has(id)) resaDone.delete(id); else resaDone.add(id);
+    save(); renderResa(); if(openDay!=null){ renderDays(); keepOpen(openDay); } }; });
+}
+
+function bindAll(){
+  document.querySelectorAll(".startInput").forEach(i=>{ i.onclick=e=>e.stopPropagation(); i.onchange=()=>{const di=+i.dataset.di; state[di].start=i.value; state[di].startNowMin=null; state[di].hereIdx=null; save(); renderDays(); keepOpen(di);}; });
+  document.querySelectorAll(".tool-btn.reset").forEach(b=>{ b.onclick=e=>{e.stopPropagation(); const di=+b.dataset.di; state[di]=freshState()[di]; save(); renderDays(); keepOpen(di);}; });
+  document.querySelectorAll(".tool-btn.rest").forEach(b=>{ b.onclick=e=>{e.stopPropagation(); const di=+b.dataset.di; openRestDialog(di);}; });
+  document.querySelectorAll(".tool-btn.addstop").forEach(b=>{ b.onclick=e=>{e.stopPropagation(); const di=+b.dataset.di; openAddDialog(di);}; });
+  document.querySelectorAll(".durInput").forEach(i=>{ i.onclick=e=>e.stopPropagation(); i.onchange=()=>{const di=+i.dataset.di,ref=i.dataset.ref; state[di].durs[ref]=Math.max(0,parseInt(i.value)||0); save(); renderDays(); keepOpen(di);}; });
+  document.querySelectorAll(".fixInput").forEach(i=>{ i.onclick=e=>e.stopPropagation(); i.onchange=()=>{const di=+i.dataset.di,ref=i.dataset.ref; state[di].fixedTimes[ref]=i.value; save(); renderDays(); keepOpen(di);}; });
+  document.querySelectorAll(".stop-toggle").forEach(t=>{ t.onclick=e=>{e.stopPropagation(); const di=+t.dataset.di,ref=t.dataset.ref; if(state[di].off.has(ref))state[di].off.delete(ref); else state[di].off.add(ref); save(); renderDays(); keepOpen(di);}; });
+  document.querySelectorAll(".rmvstop").forEach(a=>{ a.onclick=e=>{e.stopPropagation(); const di=+a.dataset.di,ref=a.dataset.ref; removeImported(di,ref); }; });
+  document.querySelectorAll(".openmap-link").forEach(a=>{ a.onclick=e=>{e.stopPropagation(); const di=+a.dataset.di,ref=a.dataset.ref; if(openDay!==di){document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); document.querySelector('.day[data-di="'+di+'"]').classList.add("open"); openDay=di; showDay(di);} const s=stopOf(di,ref); map.setView(s.ll,15); const mk=allMarkers.find(o=>o.gid===s.gid); if(mk) mk.mk.openPopup(); if(window.innerWidth<=820) document.body.classList.add("showmap");}; });
+  bindDrag();
+}
+function keepOpen(di){ const w=document.querySelector('.day[data-di="'+di+'"]'); if(w){w.classList.add("open"); openDay=di;} drawDay(di); }
+
+// retirer un lieu import\u00e9 d'un jour (et redonner son statut bonus au jour d'origine si on l'avait d\u00e9grad\u00e9)
+function removeImported(di,ref){
+  state[di].order=state[di].order.filter(r=>keyOf(r)!==ref);
+  state[di].extra=state[di].extra.filter(g=>("g:"+g)!==ref);
+  state[di].off.delete(ref); delete state[di].durs[ref]; delete state[di].fixedTimes[ref];
+  save(); renderDays(); keepOpen(di);
+}
+
+// modale d'ajout : oublis/catalogue d'abord, puis lieux des autres jours group\u00e9s
+function openAddDialog(di){
+  const mb=document.getElementById("modalBg"); const mc=document.getElementById("modalContent");
+  const already=new Set(state[di].order.map(r=>stopOf(di,r).gid));
+  let html='<h3>Ajouter un lieu \u00e0 ce jour</h3><p>Pioche un lieu mis de c\u00f4t\u00e9 ou emprunt\u00e9 \u00e0 un autre jour. Il restera propos\u00e9 en bonus dans son jour d\u2019origine.</p>';
+  // groupe 1 : Escapades (catalogue / oublis)
+  function groupHtml(dj,title){
+    let h=''; let items='';
+    days[dj].stops.forEach((s)=>{
+      if(s.cat==="hotel") return;
+      if(already.has(s.gid)) return;
+      if(isTakenGid(s.gid)) return;
+      items+='<button class="opt" data-act="add" data-gid="'+s.gid+'">'+CATICON[s.cat]+' '+s.name+'<small>'+CATLABEL[s.cat]+'</small></button>';
+    });
+    if(items){ h='<div style="font-size:11px;color:var(--muted);margin:10px 0 6px">'+title+'</div>'+items; }
+    return h;
+  }
+  html+=groupHtml(5,"Id\u00e9es et oublis (\u00e0 piocher)");
+  days.forEach((d,dj)=>{ if(dj===di||dj===5) return; html+=groupHtml(dj,d.name); });
+  html+='<button class="cancel" data-act="cancel">Annuler</button>';
+  mc.innerHTML=html; mb.classList.add("show");
+  mc.querySelectorAll("button").forEach(b=>{ b.onclick=()=>{
+    const act=b.dataset.act;
+    if(act==="add"){
+      const gid=b.dataset.gid; const src=GID[gid];
+      // importer dans le jour courant : ref "g:GID", actif, ins\u00e9r\u00e9 en fin
+      const ref="g:"+gid;
+      state[di].extra.push(gid);
+      state[di].order.push(ref);
+      // d\u00e9grader le statut dans le jour d'origine : passe en bonus (si pas d\u00e9j\u00e0 bonus) et d\u00e9sactiv\u00e9 l\u00e0-bas
+      if(src.di!==di && src.s.lvl==="core"){ src.s.lvl="bonus"; }
+      if(src.di!==di){ state[src.di].off.add(String(src.si)); }
+    }
+    mb.classList.remove("show");
+    if(act!=="cancel"){ save(); renderDays(); keepOpen(di); }
+  }; });
+}
+
+// drag & drop pour réordonner (desktop + touch via pointer)
+let dragRef=null,dragDi=null;
+function bindDrag(){
+  document.querySelectorAll(".stop").forEach(el=>{
+    el.ondragstart=e=>{ dragDi=+el.dataset.di; dragRef=el.dataset.ref; el.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; };
+    el.ondragend=()=>{ el.classList.remove("dragging"); document.querySelectorAll(".stop").forEach(s=>s.classList.remove("dragover")); };
+    el.ondragover=e=>{ if(+el.dataset.di!==dragDi) return; e.preventDefault(); el.classList.add("dragover"); };
+    el.ondragleave=()=>el.classList.remove("dragover");
+    el.ondrop=e=>{ e.preventDefault(); const di=+el.dataset.di, ref=el.dataset.ref; if(di!==dragDi||ref===dragRef) return;
+      const ord=state[di].order.map(r=>keyOf(r));
+      const from=ord.indexOf(dragRef), to=ord.indexOf(ref);
+      const real=state[di].order; const moved=real.splice(from,1)[0]; real.splice(to,0,moved);
+      save(); renderDays(); keepOpen(di); };
+  });
+}
+
+// "reste de la journée" : choisir maintenant ou une étape "on est ici"
+function openRestDialog(di){
+  const seq=state[di].order.filter(ref=>isActiveRef(di,ref));
+  const mb=document.getElementById("modalBg"); const mc=document.getElementById("modalContent");
+  if(seq.length===0){
+    mc.innerHTML='<h3>Rien d\u2019activ\u00e9 ici</h3><p>Ajoute d\u2019abord une ou plusieurs \u00e9tapes avec leur interrupteur, puis relance le calcul du reste de la journ\u00e9e.</p><button class="cancel" data-act="cancel">Compris</button>';
+    mb.classList.add("show");
+    mc.querySelector("button").onclick=()=>mb.classList.remove("show");
+    return;
+  }
+  // d\u00e9duire l'\u00e9tape probable selon l'heure actuelle, \u00e0 partir des horaires calcul\u00e9s
+  const guess=guessCurrentRef(di);
+  let html='<h3>Reste de la journ\u00e9e</h3><p>On recalcule le programme \u00e0 partir d\u2019o\u00f9 vous \u00eates, l\u00e0, maintenant.</p>';
+  if(guess){
+    html+='<button class="opt" data-act="here" data-ref="'+keyOf(guess.ref)+'" style="border-color:var(--green)">\u{1F4CD} On devrait \u00eatre vers \u00ab '+stopOf(di,guess.ref).name+' \u00bb<small>'+guess.note+' \u00b7 touche pour repartir d\u2019ici</small></button>';
+  }
+  html+='<button class="opt" data-act="now">\u23F0 Partir de maintenant<small>Il est '+hhmm(nowMin())+', on encha\u00eene la suite sans changer l\u2019\u00e9tape</small></button>';
+  html+='<div style="font-size:11px;color:var(--muted);margin:10px 0 6px">\u2026 ou choisis l\u2019\u00e9tape o\u00f9 on est :</div>';
+  seq.forEach((ref,k)=>{ const sel=guess&&keyOf(guess.ref)===keyOf(ref)?' style="border-color:var(--green)"':''; html+='<button class="opt" data-act="here" data-ref="'+keyOf(ref)+'"'+sel+'>'+(k+1)+'. '+stopOf(di,ref).name+'</button>'; });
+  html+='<button class="cancel" data-act="cancel">Annuler</button>';
+  mc.innerHTML=html; mb.classList.add("show");
+  mc.querySelectorAll("button").forEach(b=>{ b.onclick=()=>{
+    const act=b.dataset.act;
+    if(act==="now"){ state[di].startNowMin=nowMin(); state[di].hereIdx=null; }
+    else if(act==="here"){ state[di].hereIdx=b.dataset.ref; state[di].startNowMin=nowMin(); }
+    mb.classList.remove("show");
+    if(act!=="cancel"){ save(); renderDays(); keepOpen(di); }
+  }; });
+}
+// devine l'\u00e9tape courante en comparant l'heure pr\u00e9sente aux horaires calcul\u00e9s du jour
+function guessCurrentRef(di){
+  const rows=computeDay(di); if(!rows.length) return null;
+  const now=nowMin();
+  if(now < rows[0].arrive) return {ref:rows[0].ref, note:"la journ\u00e9e n\u2019a pas encore commenc\u00e9"};
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i];
+    if(now>=r.arrive && now<=r.depart) return {ref:r.ref, note:"d\u2019apr\u00e8s l\u2019horaire pr\u00e9vu"};
+    if(i+1<rows.length && now>r.depart && now<rows[i+1].arrive) return {ref:rows[i+1].ref, note:"en route vers la suivante"};
+  }
+  return {ref:rows[rows.length-1].ref, note:"derni\u00e8re \u00e9tape pr\u00e9vue"};
+}
+function nowMin(){ const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+
+// distance approx en m\u00e8tres entre deux points
+function distM(a,b){ const R=6371000,toR=Math.PI/180; const dlat=(b[0]-a[0])*toR,dlon=(b[1]-a[1])*toR;
+  const x=Math.sin(dlat/2)**2+Math.cos(a[0]*toR)*Math.cos(b[0]*toR)*Math.sin(dlon/2)**2; return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); }
+// d\u00e9tecte l'\u00e9tape active la plus proche de la position GPS, si < seuil
+const GPS_SEUIL=180; // m\u00e8tres
+function guessByGPS(di){
+  if(!lastPos) return null;
+  const seq=state[di].order.filter(ref=>isActiveRef(di,ref));
+  let best=null,bd=1e9;
+  seq.forEach(ref=>{ const s=stopOf(di,ref); if(s.cat==="hotel"&&s.dur===0) return; // ignorer le nid de d\u00e9part
+    const d=distM(lastPos,s.ll); if(d<bd){bd=d;best=ref;} });
+  if(best!=null && bd<=GPS_SEUIL) return {ref:best, dist:Math.round(bd)};
+  return null;
+}
+// gid d\u00e9j\u00e0 trait\u00e9 (recal\u00e9 ou ignor\u00e9) pour ne pas reproposer en boucle
+let gpsHandledGid=null;
+
+// markers (un par lieu, index\u00e9 par gid)
+const allMarkers=[];
+days.forEach((day,di)=>{ day.stops.forEach((s,si)=>{
+  const mk=L.marker(s.ll,{icon:pinIcon(day.color,si+1,CATICON[s.cat],s.lvl!=="core",false)});
+  let pop='<h3>'+CATICON[s.cat]+' '+s.name+'</h3><div class="pm">'+day.name+'</div><div>'+s.desc+'</div>';
+  if(RESLINK[s.name]) pop+='<div style="margin-top:6px"><a href="'+RESLINK[s.name]+'" target="_blank" rel="noopener">R\u00e9server</a></div>';
+  pop+='<div style="margin-top:4px"><a href="https://www.google.com/search?tbm=isch&q='+encodeURIComponent(s.name+" New York")+'" target="_blank" rel="noopener">Photos</a></div>';
+  mk.bindPopup(pop); allMarkers.push({mk,gid:s.gid,color:day.color});
+}); });
+
+let curLines=[];
+function drawDay(di){
+  layersClear();
+  // markers : ceux pr\u00e9sents dans la s\u00e9quence du jour (natifs + import\u00e9s), num\u00e9rot\u00e9s selon l'ordre
+  const seq=activeSeq(di);
+  state[di].order.forEach((ref)=>{
+    const s=stopOf(di,ref); const off=!isActiveRef(di,ref);
+    const pos=seq.findIndex(r=>keyOf(r)===keyOf(ref));
+    const mk=allMarkers.find(o=>o.gid===s.gid); if(!mk) return;
+    mk.mk.setIcon(pinIcon(days[di].color, pos>=0?pos+1:"\u00b7", CATICON[s.cat], s.lvl!=="core", off));
+    mk.mk.addTo(map);
+  });
+  dayPolylines(di).forEach(seg=>{ const pl=L.polyline(seg.coords,{color:days[di].color,weight:seg.dash?2.5:4,opacity:seg.dash?.6:.9,dashArray:seg.dash?"4,8":null}).addTo(map); curLines.push(pl); });
+  fitDay(di);
+  activeDay=di;
+}
+function layersClear(){ curLines.forEach(l=>map.removeLayer(l)); curLines=[]; allMarkers.forEach(o=>{ if(map.hasLayer(o.mk)) map.removeLayer(o.mk); }); if(heartLayer){ map.removeLayer(heartLayer); heartLayer=null; } }
+let activeDay=0;
+function showDay(di){ drawDay(di); }
+function fitDay(di){ const pts=activeSeq(di).map(ref=>stopOf(di,ref).ll); const all=pts.length?pts:state[di].order.map(ref=>stopOf(di,ref).ll); if(all.length) map.fitBounds(L.latLngBounds(all).pad(0.18)); }
+
+// coeur "Big Apple" centr\u00e9 sur Manhattan, pour l'accueil
+let heartLayer=null;
+function heartPoints(){
+  const cx=40.776, cy=-73.971;             // centre, Midtown / Central Park sud
+  const scaLat=0.085, scaLng=0.085*(111/84.7), amp=16;
+  const pts=[]; const n=140;
+  for(let i=0;i<=n;i++){ const t=2*Math.PI*i/n;
+    const x=16*Math.pow(Math.sin(t),3);
+    const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+    pts.push([cx+(y/amp)*scaLat, cy+(x/amp)*scaLng]); }
+  return pts;
+}
+function drawHeart(){
+  layersClear();
+  const pts=heartPoints();
+  heartLayer=L.layerGroup();
+  // halo doux + trait net, dans le rose de l'app
+  L.polygon(pts,{color:"#ff5d8f",weight:10,opacity:.18,fill:true,fillColor:"#ff5d8f",fillOpacity:.10}).addTo(heartLayer);
+  L.polygon(pts,{color:"#ff5d8f",weight:3,opacity:.95,fill:false}).addTo(heartLayer);
+  heartLayer.addTo(map);
+  map.fitBounds(L.latLngBounds(pts).pad(0.25));
+}
+
+// tabs
+function showView(v){ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.v===v));
+  ["accueil","itineraire","resa","guide"].forEach(x=>document.getElementById("view-"+x).style.display=(x===v)?"block":"none");
+  if(v==="accueil"){ openDay=null; hideGpsBanner(); document.querySelectorAll(".day").forEach(x=>x.classList.remove("open")); setTimeout(()=>{ map.invalidateSize(); drawHeart(); },60); }
+  if(v==="resa"){ renderResa(); }
+  if(v==="itineraire") setTimeout(()=>map.invalidateSize(),60); }
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>showView(t.dataset.v));
+var _cta=document.getElementById("ctaStart"); if(_cta) _cta.onclick=()=>showView("itineraire");
+var _mbg=document.getElementById("modalBg"); if(_mbg) _mbg.onclick=function(e){ if(e.target===_mbg) _mbg.classList.remove("show"); };
+
+// map buttons
+document.getElementById("btnDayView").onclick=()=>fitDay(activeDay);
+document.getElementById("fabMap").onclick=()=>{ document.body.classList.toggle("showmap"); setTimeout(()=>map.invalidateSize(),60); };
+document.getElementById("tileSel").onchange=e=>setTiles(e.target.value);
+
+// geoloc
+let watchId=null,userMk=null,userC=null,lastPos=null;
+const btnLoc=document.getElementById("btnLoc"),btnRe=document.getElementById("btnRecenter");
+function drawUser(lat,lng,acc){ lastPos=[lat,lng]; if(!userMk){ userMk=L.circleMarker([lat,lng],{radius:8,color:"#fff",weight:2,fillColor:"#5b8cff",fillOpacity:1}).addTo(map); userC=L.circle([lat,lng],{radius:acc||30,color:"#5b8cff",weight:1,fillColor:"#5b8cff",fillOpacity:.12}).addTo(map);} else {userMk.setLatLng([lat,lng]); userC.setLatLng([lat,lng]).setRadius(acc||30);} maybeShowGpsBanner(); }
+
+// bandeau de recalage : appara\u00eet quand le GPS reconna\u00eet une \u00e9tape du jour ouvert
+const gpsBanner=document.getElementById("gpsBanner"),gpsTxt=document.getElementById("gpsTxt");
+let gpsPendingRef=null,gpsPendingDi=null;
+function maybeShowGpsBanner(){
+  if(openDay==null){ hideGpsBanner(); return; }
+  const di=openDay; const g=guessByGPS(di);
+  if(!g){ return; } // hors de port\u00e9e d'une \u00e9tape : on ne touche \u00e0 rien
+  const s=stopOf(di,g.ref); 
+  // d\u00e9j\u00e0 cal\u00e9 sur cette \u00e9tape, ou d\u00e9j\u00e0 trait\u00e9e : ne pas reproposer
+  if(state[di].hereIdx!=null && keyOf(state[di].hereIdx)===keyOf(g.ref)){ hideGpsBanner(); return; }
+  if(gpsHandledGid===s.gid){ return; }
+  gpsPendingRef=g.ref; gpsPendingDi=di;
+  gpsTxt.innerHTML="Vous semblez \u00eatre \u00e0 <b>"+s.name+"</b> ("+g.dist+" m). Recaler le reste de la journ\u00e9e \u00e0 partir d\u2019ici, \u00e0 "+hhmm(nowMin())+" ?";
+  gpsBanner.classList.add("show");
+}
+function hideGpsBanner(){ gpsBanner.classList.remove("show"); }
+document.getElementById("gpsGo").onclick=()=>{
+  if(gpsPendingDi==null||gpsPendingRef==null) return;
+  const di=gpsPendingDi; state[di].hereIdx=keyOf(gpsPendingRef); state[di].startNowMin=nowMin();
+  gpsHandledGid=stopOf(di,gpsPendingRef).gid;
+  hideGpsBanner(); save(); renderDays(); keepOpen(di);
+};
+document.getElementById("gpsX").onclick=()=>{
+  if(gpsPendingDi!=null&&gpsPendingRef!=null){ gpsHandledGid=stopOf(gpsPendingDi,gpsPendingRef).gid; }
+  hideGpsBanner();
+};
+btnLoc.onclick=()=>{ if(!("geolocation" in navigator)){alert("G\u00e9olocalisation indisponible.");return;}
+  if(watchId===null){ btnLoc.innerHTML="\u{1F4CD} Localisation\u2026";
+    watchId=navigator.geolocation.watchPosition(p=>{ drawUser(p.coords.latitude,p.coords.longitude,p.coords.accuracy); if(!btnLoc.classList.contains("locon")) map.setView([p.coords.latitude,p.coords.longitude],15); btnLoc.classList.add("locon"); btnLoc.innerHTML="\u{1F4CD} Suivi actif"; btnRe.style.display="block";},
+    e=>{ btnLoc.classList.remove("locon"); btnLoc.innerHTML="\u{1F4CD} Ma position"; watchId=null; alert("Position indisponible. Autorise la localisation (page en https).");},
+    {enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+  } else { navigator.geolocation.clearWatch(watchId); watchId=null; btnLoc.classList.remove("locon"); btnLoc.innerHTML="\u{1F4CD} Ma position"; btnRe.style.display="none"; } };
+btnRe.onclick=()=>{ if(lastPos) map.setView(lastPos,16); };
+
+// legend
+const lgi=document.getElementById("lgIcons");
+Object.keys(CATLABEL).forEach(k=>{ const d=document.createElement("div"); d.innerHTML="<span>"+CATICON[k]+"</span> "+CATLABEL[k]; lgi.appendChild(d); });
+
+// persistance par URL
+function save(){ try{ const p=state.map(s=>({o:s.order,off:[...s.off],st:s.start,fx:s.fixedTimes,du:s.durs,hi:s.hereIdx,sn:s.startNowMin,ex:s.extra}));
+  const payload={d:p,rz:[...resaDone]};
+  history.replaceState(null,"","#s="+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))))); }catch(e){} }
+function load(){ try{ const m=location.hash.match(/s=([^&]+)/); if(!m) return; const raw=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+  const p=Array.isArray(raw)?raw:raw.d;  // r\u00e9trocompat ancien format
+  p.forEach((x,i)=>{ if(state[i]){ state[i].order=x.o; state[i].off=new Set(x.off||[]); state[i].start=x.st; state[i].fixedTimes=x.fx||{}; state[i].durs=x.du||{}; state[i].hereIdx=(x.hi!=null?x.hi:null); state[i].startNowMin=(x.sn!=null?x.sn:null); state[i].extra=x.ex||[]; } });
+  if(!Array.isArray(raw)&&raw.rz) resaDone=new Set(raw.rz);
+  state.forEach((st,di)=>{ st.extra.forEach(gid=>{ const src=GID[gid]; if(src && src.di!==di && src.s.lvl==="core"){ src.s.lvl="bonus"; state[src.di].off.add(String(src.si)); } }); });
+}catch(e){} }
+
+// init
+load();
+renderDays();
+openDay=null;
+document.querySelectorAll(".day").forEach(x=>x.classList.remove("open"));
+showView("accueil");
+setTimeout(()=>drawHeart(),120);
 </script>
 </body>
 </html>
