@@ -141,7 +141,8 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .packlist li{padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--ink2);display:flex;gap:9px;align-items:flex-start}
 .packlist li span.i{font-size:15px;flex:0 0 auto}
 .mapbtns{position:absolute;z-index:600;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.mapbtns button{background:rgba(23,27,34,.94);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:10px 13px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.mapbtns button{display:flex;align-items:center;gap:7px;background:rgba(23,27,34,.94);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:10px 13px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.mapbtns button .ic{font-size:15px;line-height:1}
 .mapbtns button:active{transform:scale(.96)}
 .mapbtns button.locon{border-color:var(--blue);color:var(--blue)}
 .layerctl{position:absolute;z-index:600;left:12px;top:12px}
@@ -164,7 +165,7 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 .alt-badge{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:20px;background:rgba(84,209,140,.16);color:var(--green);text-transform:uppercase;letter-spacing:.4px}
 .modal-bg{position:fixed;inset:0;background:rgba(8,10,14,.72);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
 .modal-bg.show{display:flex}
-.gps-banner{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:1900;display:flex;align-items:center;gap:12px;max-width:min(560px,calc(100vw - 24px));background:linear-gradient(160deg,#1d2530,#151a22);border:1px solid var(--green);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.9,.3,1.2);opacity:0}
+.gps-banner{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:1900;display:flex;align-items:center;gap:12px;max-width:min(560px,calc(100vw - 24px));background:linear-gradient(160deg,#1d2530,#151a22);border:1px solid var(--green);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.9,.3,1.2);opacity:0}
 .gps-banner.show{transform:translateX(-50%) translateY(0);opacity:1}
 .gps-txt{font-size:13px;line-height:1.35;color:var(--ink);flex:1}
 .gps-txt b{color:var(--green)}
@@ -186,6 +187,11 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
   .fab-map{display:flex;position:fixed;z-index:1300;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));background:var(--accent);color:#fff;border:0;border-radius:30px;padding:14px 20px;font-size:14px;font-weight:700;box-shadow:var(--shadow);align-items:center;gap:8px;cursor:pointer}
   body.showmap .fab-map{background:var(--card);color:var(--ink)}
   .tab{padding:14px 15px;font-size:14px}
+  /* boutons carte compacts : icône seule, ronds, empilés au-dessus du bouton Carte */
+  .mapbtns{right:16px;bottom:calc(84px + env(safe-area-inset-bottom));gap:10px}
+  .mapbtns button{width:46px;height:46px;padding:0;justify-content:center;border-radius:50%}
+  .mapbtns button .lbl{display:none}
+  .mapbtns button .ic{font-size:18px}
 }
 </style>
 </head>
@@ -287,9 +293,9 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
     <div id="map"></div>
     <div class="layerctl"><select id="tileSel"><option value="sombre">Fond sombre</option><option value="clair">Fond clair</option><option value="satellite">Satellite</option><option value="plan">Plan détaillé</option></select></div>
     <div class="mapbtns">
-      <button id="btnDayView">🗺 Vue du jour</button>
-      <button id="btnLoc">📍 Ma position</button>
-      <button id="btnRecenter" style="display:none">🎯 Me recentrer</button>
+      <button id="btnDayView" aria-label="Vue du jour"><span class="ic">🗺</span><span class="lbl">Vue du jour</span></button>
+      <button id="btnLoc" aria-label="Ma position"><span class="ic">📍</span><span class="lbl">Ma position</span></button>
+      <button id="btnRecenter" style="display:none" aria-label="Me recentrer"><span class="ic">🎯</span><span class="lbl">Me recentrer</span></button>
     </div>
   </div>
 </div>
@@ -798,11 +804,12 @@ document.getElementById("gpsX").onclick=()=>{
   hideGpsBanner();
 };
 btnLoc.onclick=()=>{ if(!("geolocation" in navigator)){alert("G\u00e9olocalisation indisponible.");return;}
-  if(watchId===null){ btnLoc.innerHTML="\u{1F4CD} Localisation\u2026";
-    watchId=navigator.geolocation.watchPosition(p=>{ drawUser(p.coords.latitude,p.coords.longitude,p.coords.accuracy); if(!btnLoc.classList.contains("locon")) map.setView([p.coords.latitude,p.coords.longitude],15); btnLoc.classList.add("locon"); btnLoc.innerHTML="\u{1F4CD} Suivi actif"; btnRe.style.display="block";},
-    e=>{ btnLoc.classList.remove("locon"); btnLoc.innerHTML="\u{1F4CD} Ma position"; watchId=null; alert("Position indisponible. Autorise la localisation (page en https).");},
+  const lbl=btnLoc.querySelector(".lbl");
+  if(watchId===null){ lbl.textContent="Localisation\u2026";
+    watchId=navigator.geolocation.watchPosition(p=>{ drawUser(p.coords.latitude,p.coords.longitude,p.coords.accuracy); if(!btnLoc.classList.contains("locon")) map.setView([p.coords.latitude,p.coords.longitude],15); btnLoc.classList.add("locon"); lbl.textContent="Suivi actif"; btnRe.style.display="block";},
+    e=>{ btnLoc.classList.remove("locon"); lbl.textContent="Ma position"; watchId=null; alert("Position indisponible. Autorise la localisation (page en https).");},
     {enableHighAccuracy:true,maximumAge:5000,timeout:15000});
-  } else { navigator.geolocation.clearWatch(watchId); watchId=null; btnLoc.classList.remove("locon"); btnLoc.innerHTML="\u{1F4CD} Ma position"; btnRe.style.display="none"; } };
+  } else { navigator.geolocation.clearWatch(watchId); watchId=null; btnLoc.classList.remove("locon"); lbl.textContent="Ma position"; btnRe.style.display="none"; } };
 btnRe.onclick=()=>{ if(lastPos) map.setView(lastPos,16); };
 
 // legend
