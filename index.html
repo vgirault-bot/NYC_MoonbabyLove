@@ -364,7 +364,7 @@ let resaDone=new Set(RESA.filter(r=>r.done).map(r=>r.id));
 function freshState(){
   return days.map((d,i)=>({
     order:d.stops.map((_,k)=>k),
-    off:new Set(d.stops.map((s,k)=> s.lvl!=="core"?k:null).filter(x=>x!==null)),
+    off:new Set(d.stops.map((s,k)=> s.lvl!=="core"?String(k):null).filter(x=>x!==null)),
     start:DEFAULT_START[i]||"09:00",
     fixedTimes:{}, durs:{}, hereIdx:null, startNowMin:null,
     extra:[]  // gids de lieux import\u00e9s d'autres jours/du catalogue
